@@ -1,0 +1,143 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "f5e7d4cb",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Index(['Age', 'Gender', 'EducationLevel', 'ExperienceYears',\n",
+      "       'PreviousCompanies', 'DistanceFromCompany', 'InterviewScore',\n",
+      "       'SkillScore', 'PersonalityScore', 'RecruitmentStrategy',\n",
+      "       'HiringDecision'],\n",
+      "      dtype='object')\n",
+      "Model Doğruluğu: 0.94\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2024-09-01 12:12:08.870 \n",
+      "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
+      "  command:\n",
+      "\n",
+      "    streamlit run C:\\Users\\Lenovo\\anaconda3\\Lib\\site-packages\\ipykernel_launcher.py [ARGUMENTS]\n",
+      "2024-09-01 12:12:08.871 Session state does not function when running a script without `streamlit run`\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import seaborn as sns\n",
+    "import matplotlib.pyplot as plt\n",
+    "from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score\n",
+    "from sklearn.preprocessing import StandardScaler, PolynomialFeatures, MinMaxScaler\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_curve, auc\n",
+    "from sklearn.svm import SVC\n",
+    "from sklearn.decomposition import PCA\n",
+    "from sklearn.cluster import KMeans\n",
+    "from sklearn.neighbors import NearestNeighbors\n",
+    "from sklearn.metrics.pairwise import cosine_similarity\n",
+    "import pickle\n",
+    "import streamlit as st  # Add this line to import the Streamlit module\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "def train_model():\n",
+    "    data = pd.read_csv('recruitment_data.csv')\n",
+    "    \n",
+    "    # Eksik değerleri kontrol etme\n",
+    "    if data.isnull().sum().sum() > 0:\n",
+    "        # Eksik değerleri doldurma veya silme işlemi\n",
+    "        data = data.fillna(0)  # Örneğin tüm eksik değerleri 0 ile dolduruyoruz\n",
+    "        # Alternatif: data = data.dropna()  # Eksik değer içeren satırları silebilirsiniz\n",
+    "    \n",
+    "    print(data.columns)\n",
+    "\n",
+    "    X = data.drop('HiringDecision', axis=1)  \n",
+    "    y = data['HiringDecision']\n",
+    "    \n",
+    "    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+    "    \n",
+    "    model = RandomForestClassifier()\n",
+    "    model.fit(X_train, y_train)\n",
+    "    \n",
+    "    predictions = model.predict(X_test)\n",
+    "    accuracy = accuracy_score(y_test, predictions)\n",
+    "    print(f\"Model Doğruluğu: {accuracy}\")\n",
+    "\n",
+    "    with open('model.pkl', 'wb') as file:\n",
+    "        pickle.dump(model, file)\n",
+    "\n",
+    "train_model()\n",
+    "\n",
+    "st.title(\"İşe Alınma Tahmin Uygulaması\")\n",
+    "\n",
+    "def get_user_input():\n",
+    "    age = st.number_input('Yaş', min_value=18, max_value=65, value=30)\n",
+    "    education = st.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])\n",
+    "    experience = st.slider('Deneyim (Yıl)', 0, 40, 5)\n",
+    "    distance = st.slider('Şirketten Uzaklık (km)', 0, 100, 10)\n",
+    "    gender = st.selectbox('Cinsiyet', ['Erkek', 'Kadın'])\n",
+    "\n",
+    "    education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}\n",
+    "    gender_mapping = {'Erkek': 0, 'Kadın': 1}\n",
+    "\n",
+    "    education_num = education_mapping[education]\n",
+    "    gender_num = gender_mapping[gender]\n",
+    "\n",
+    "    user_data = {\n",
+    "        'Age': age, \n",
+    "        'EducationLevel': education_num, \n",
+    "        'ExperienceYears': experience,\n",
+    "        'DistanceFromCompany': distance,\n",
+    "        'Gender': gender_num\n",
+    "    }\n",
+    "    \n",
+    "    features = pd.DataFrame(user_data, index=[0])\n",
+    "    return features\n",
+    "\n",
+    "user_input = get_user_input()\n",
+    "\n",
+    "with open('model.pkl', 'rb') as file:\n",
+    "    loaded_model = pickle.load(file)\n",
+    "\n",
+    "columns_needed = loaded_model.feature_names_in_\n",
+    "user_input = user_input.reindex(columns=columns_needed, fill_value=0)\n",
+    "\n",
+    "prediction = loaded_model.predict(user_input)\n",
+    "\n",
+    "st.subheader('Tahmin Sonucu')\n",
+    "st.write('İşe Alınma Durumu: {}'.format('Alınacak' if prediction[0] == 1 else 'Alınmayacak'))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
