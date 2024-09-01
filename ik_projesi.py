@@ -2,20 +2,20 @@
  "cells": [
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 1,
    "id": "f5e7d4cb",
    "metadata": {},
    "outputs": [
     {
-     "name": "stdout",
+     "name": "stderr",
      "output_type": "stream",
      "text": [
-      "Veri sütunları: Index(['Age', 'Gender', 'EducationLevel', 'ExperienceYears',\n",
-      "       'PreviousCompanies', 'DistanceFromCompany', 'InterviewScore',\n",
-      "       'SkillScore', 'PersonalityScore', 'RecruitmentStrategy',\n",
-      "       'HiringDecision'],\n",
-      "      dtype='object')\n",
-      "Model Doğruluğu: 0.93\n"
+      "2024-09-01 12:52:08.923 \n",
+      "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
+      "  command:\n",
+      "\n",
+      "    streamlit run C:\\Users\\Lenovo\\anaconda3\\Lib\\site-packages\\ipykernel_launcher.py [ARGUMENTS]\n",
+      "2024-09-01 12:52:08.927 Session state does not function when running a script without `streamlit run`\n"
      ]
     }
    ],
@@ -62,7 +62,7 @@
     "    except Exception as e:\n",
     "        print(f\"Model eğitimi sırasında bir hata oluştu: {e}\")\n",
     "\n",
-    "train_model()\n",
+    "# train_model()  # Bu satırı yorum satırına alın, yalnızca model eğitimine ihtiyacınız olduğunda çalıştırın.\n",
     "\n",
     "st.title(\"İşe Alınma Tahmin Uygulaması\")\n",
     "\n",
@@ -117,6 +117,8 @@
     "\n",
     "except FileNotFoundError:\n",
     "    st.error(\"Model dosyası bulunamadı, lütfen modeli eğitip tekrar deneyin.\")\n",
+    "except NameError as ne:\n",
+    "    st.error(f\"Bir NameError oluştu: {ne}\")\n",
     "except Exception as e:\n",
     "    st.error(f\"Tahmin işlemi sırasında bir hata oluştu: {e}\")\n"
    ]
