@@ -11,36 +11,7 @@ def train_model():
         # Veriyi okuma
         data = pd.read_csv('recruitment_data.csv')
         
-        # Eksik değerleri kontrol etme ve doldurma
-        if data.isnull().sum().sum() > 0:
-            data = data.fillna(0)
-        
         print("Veri sütunları:", data.columns)
-
-        # Özellikler ve hedef değişkeni ayırma
-        X = data.drop('HiringDecision', axis=1)
-        y = data['HiringDecision']
-        
-        # Veriyi eğitim ve test setlerine ayırma
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        
-        # Modeli eğitme
-        model = RandomForestClassifier()
-        model.fit(X_train, y_train)
-        
-        # Tahmin ve doğruluk
-        predictions = model.predict(X_test)
-        accuracy = accuracy_score(y_test, predictions)
-        print(f"Model Doğruluğu: {accuracy:.2f}")
-        
-        # Modeli kaydetme
-        with open('model.pkl', 'wb') as file:
-            pickle.dump(model, file)
-
-    except Exception as e:
-        print(f"Model eğitimi sırasında bir hata oluştu: {e}")
-
-# train_model()  # Bu satırı yorum satırına alın, yalnızca model eğitimine ihtiyacınız olduğunda çalıştırın.
 
 st.title("İşe Alınma Tahmin Uygulaması")
 
