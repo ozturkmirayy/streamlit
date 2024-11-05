@@ -36,7 +36,6 @@ train_model()
 st.set_page_config(
     page_title="İşe Alım Tahminleme",
     page_icon="https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp",
-    }
 )
 
 # Markdown Oluşturma
