@@ -34,15 +34,15 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main {
-        background-color: #DCC6E0; /* Ana sayfa arka plan rengi */
+        background-color: #E6E6FA; /* Ana sayfa arka plan rengi */
         color: #333333; /* Genel metin rengi */
     }
     .stSidebar {
-        background-color: #e1e4ea; /* Yan menü arka plan rengi */
+        background-color: #E6E6FA; /* Yan menü arka plan rengi */
     }
     .stButton>button {
         color: white;
-        background-color: #4CAF50; /* Buton rengi */
+        background-color: #E6E6FA; /* Buton rengi */
     }
     .stNumberInput>label, .stSelectbox>label, .stSlider>label {
         color: #4CAF50; /* Giriş bileşenleri etiket rengi */
