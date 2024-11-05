@@ -61,13 +61,25 @@ def main_app():
             border-radius: 10px;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             margin: 20px 0;
+            text-align: center;
         }
         .title {
             color: #333333;
             font-size: 36px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #6c757d;
+            margin-bottom: 25px;
+        }
+        .image-container img {
+            border-radius: 8px;
+            margin-bottom: 15px;
+            max-width: 100%;
+            height: auto;
         }
         .result-card {
             background-color: #f1f9f1;
@@ -88,9 +100,16 @@ def main_app():
         </style>
         """, unsafe_allow_html=True)
 
-    # Başlık ve açıklama kartı
+    # Başlık, açıklama ve resim kısmı
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.markdown("<div class='title'>İşe Alınma Tahmin Uygulaması</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>Adayların iş pozisyonlarına uygunluğunu hızla değerlendirin</div>", unsafe_allow_html=True)
+    
+    # Görsel
+    st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", caption="İşe Alım Sürecinde Veriye Dayalı Tahminler")
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     st.write("Bu uygulama, adayların işe alım sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.")
     st.write("Lütfen aday bilgilerini girin ve işe alınma tahminini görmek için tahmin butonuna basın.")
     st.markdown("</div>", unsafe_allow_html=True)
@@ -151,12 +170,10 @@ def main_app():
 def display_prediction(prediction, user_input):
     if prediction[0] == 1:
         result_class = "result-card"
-        result_text = "✅ İŞE ALINABİLİR"
-        result_color = "#D4EDDA"
+        result_text = "✅ İŞE ALINACAK"
     else:
         result_class = "result-card red"
-        result_text = "❌ İŞE ALINMAYABİLİR"
-        result_color = "#F8D7DA"
+        result_text = "❌ İŞE ALINMAYACAK"
     
     st.markdown(f"""
         <div class='{result_class}'>
