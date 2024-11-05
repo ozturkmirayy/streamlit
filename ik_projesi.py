@@ -132,14 +132,14 @@ def main_app():
             # Alınacak durumu için yeşil bir kart
             st.markdown("""
                 <div style="padding: 20px; background-color: #D4EDDA; border: 1px solid #C3E6CB; border-radius: 8px; text-align: center; color: #155724; font-size: 24px; font-weight: bold;">
-                    ✅ İŞE ALINACAK
+                    ✅ İŞE ALINABİLİR
                 </div>
             """, unsafe_allow_html=True)
         else:
             # Alınmayacak durumu için kırmızı bir kart
             st.markdown("""
                 <div style="padding: 20px; background-color: #F8D7DA; border: 1px solid #F5C6CB; border-radius: 8px; text-align: center; color: #721C24; font-size: 24px; font-weight: bold;">
-                    ❌ İŞE ALINMAYACAK
+                    ❌ İŞE ALINMAYABİLİR
                 </div>
             """, unsafe_allow_html=True)
 
