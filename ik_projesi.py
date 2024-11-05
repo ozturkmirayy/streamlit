@@ -13,6 +13,34 @@ PASSWORD = "password"
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
 
+# Tema Seçimi
+if 'theme' not in st.session_state:
+    st.session_state['theme'] = 'light'
+
+# Tema Değiştirme Fonksiyonu
+def toggle_theme():
+    if st.session_state['theme'] == 'light':
+        st.session_state['theme'] = 'dark'
+    else:
+        st.session_state['theme'] = 'light'
+
+# Tema CSS Kodları
+light_theme = """
+    <style>
+        body { background-color: #f4f7fb; }
+        .content-card, .result-card { background-color: white; color: #333333; }
+        .title { color: #333333; }
+    </style>
+"""
+
+dark_theme = """
+    <style>
+        body { background-color: #2b2b2b; color: #ffffff; }
+        .content-card, .result-card { background-color: #3a3a3a; color: #ffffff; }
+        .title { color: #ffffff; }
+    </style>
+"""
+
 # Giriş sayfası
 def login():
     st.title("Giriş Yap")
@@ -48,15 +76,19 @@ def main_app():
         train_model()
         st.session_state['model_trained'] = True
 
+    # Tema Uygulama
+    if st.session_state['theme'] == 'light':
+        st.markdown(light_theme, unsafe_allow_html=True)
+    else:
+        st.markdown(dark_theme, unsafe_allow_html=True)
+        
+    # Tema Değiştir Butonu
+    st.sidebar.button("Tema Değiştir", on_click=toggle_theme)
+
     # Sayfa tasarımı ve stil
     st.markdown("""
         <style>
-        .main {
-            background-color: #f4f7fb;
-            padding: 20px;
-        }
         .content-card {
-            background-color: white;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
@@ -64,38 +96,21 @@ def main_app():
             text-align: center;
         }
         .title {
-            color: #333333;
             font-size: 36px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 10px;
         }
-        .subtitle {
-            font-size: 18px;
-            color: #6c757d;
-            margin-bottom: 25px;
-        }
-        .image-container img {
-            border-radius: 8px;
-            margin-bottom: 15px;
-            max-width: 100%;
-            height: auto;
-        }
         .result-card {
-            background-color: #f1f9f1;
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid #b2d8b2;
             text-align: center;
-            color: #155724;
             font-size: 24px;
             font-weight: bold;
             margin-top: 20px;
         }
         .result-card.red {
-            background-color: #fdecea;
             border-color: #f5c6cb;
-            color: #721c24;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -103,36 +118,21 @@ def main_app():
     # Başlık, açıklama ve resim kısmı
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.markdown("<div class='title'>İşe Alınma Tahmin Uygulaması</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Adayların iş pozisyonlarına uygunluğunu hızla değerlendirin</div>", unsafe_allow_html=True)
-    
-    # Görsel
-    st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+    st.write("Adayların iş pozisyonlarına uygunluğunu hızlıca değerlendirin.")
     st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", caption="İşe Alım Sürecinde Veriye Dayalı Tahminler")
     st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.write("Bu uygulama, adayların işe alım sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.")
-    st.write("Lütfen aday bilgilerini girin ve işe alınma tahminini görmek için tahmin butonuna basın.")
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Kullanıcı girişi fonksiyonu (sidebar üzerinden yapılacak girişler)
+    # Kullanıcı girişi fonksiyonu
     def get_user_input():
         st.sidebar.header("Aday Bilgileri")
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
         st.sidebar.caption("Adayın yaşını girin (18-65)")
         
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-        st.sidebar.caption("En yüksek eğitim seviyesini seçin")
-        
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
-        st.sidebar.caption("Adayın iş deneyimini yıllık olarak girin")
-        
         distance = st.sidebar.slider('Şirketten Uzaklık (km)', 0, 100, 10)
-        st.sidebar.caption("Adayın ikamet adresi ile şirket arasındaki mesafeyi girin (km)")
-        
         gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
-        st.sidebar.caption("Cinsiyet seçimini yapın")
 
-        # Eğitim seviyesi ve cinsiyet için sayısal değerler
         education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
         gender_mapping = {'Erkek': 0, 'Kadın': 1}
 
@@ -170,10 +170,10 @@ def main_app():
 def display_prediction(prediction, user_input):
     if prediction[0] == 1:
         result_class = "result-card"
-        result_text = "✅ İŞE ALINABİLİR"
+        result_text = "✅ İŞE ALINACAK"
     else:
         result_class = "result-card red"
-        result_text = "❌ İŞE ALINMAYABİLİR"
+        result_text = "❌ İŞE ALINMAYACAK"
     
     st.markdown(f"""
         <div class='{result_class}'>
@@ -184,14 +184,4 @@ def display_prediction(prediction, user_input):
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.subheader("Aday Özellikleri")
     st.write(f"Yaş: {user_input['Age'][0]}")
-    st.write(f"Eğitim Seviyesi: {user_input['EducationLevel'][0]}")
-    st.write(f"Deneyim Yılı: {user_input['ExperienceYears'][0]}")
-    st.write(f"Şirketten Uzaklık: {user_input['DistanceFromCompany'][0]} km")
-    st.write(f"Cinsiyet: {'Erkek' if user_input['Gender'][0] == 0 else 'Kadın'}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Giriş yapılıp yapılmadığını kontrol et
-if not st.session_state['authenticated']:
-    login()
-else:
-    main_app()
+   
