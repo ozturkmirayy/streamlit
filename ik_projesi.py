@@ -51,22 +51,6 @@ def train_and_save_model():
 if not os.path.exists('model.pkl'):
     train_and_save_model()
 
-# Ana uygulama sayfası
-def main_app():
-    # Tema Uygulama
-    apply_theme()
-
-    # Tema Butonları
-    if st.sidebar.button("Aydınlık Tema"):
-        st.session_state['theme'] = 'light'
-        apply_theme()
-    if st.sidebar.button("Karanlık Tema"):
-        st.session_state['theme'] = 'dark'
-        apply_theme()
-    if st.sidebar.button("Renkli Tema"):
-        st.session_state['theme'] = 'colorful'
-        apply_theme()
-
     # Sayfa tasarımı ve stil
     st.markdown("""
         <style>
