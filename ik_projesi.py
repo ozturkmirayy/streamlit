@@ -15,43 +15,89 @@ PASSWORD = "password"
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
 
-# Varsayılan Tema Seçimi
+# Varsayılan Tema
 if 'theme' not in st.session_state:
     st.session_state['theme'] = 'light'
 
 # Tema CSS Kodları
-light_theme = """
-    <style>
-        body { background-color: white; color: black; }
-        .content-card, .result-card { background-color: white; color: black; }
-        .title { color: black; }
-    </style>
-"""
-
-dark_theme = """
-    <style>
-        body { background-color: black; color: white; }
-        .content-card, .result-card { background-color: #333333; color: white; }
-        .title { color: white; }
-    </style>
-"""
-
-colorful_theme = """
-    <style>
-        body { background-color: #E6E6FA; color: white; }
-        .content-card, .result-card { background-color: #9370DB; color: white; }
-        .title { color: white; }
-    </style>
-"""
+themes = {
+    "light": """
+        <style>
+            body { background-color: #FFFFFF; color: black; }
+            .content-card, .result-card { background-color: white; color: black; }
+            .title { color: black; }
+        </style>
+    """,
+    "dark": """
+        <style>
+            body { background-color: #000000; color: white; }
+            .content-card, .result-card { background-color: #333333; color: white; }
+            .title { color: white; }
+        </style>
+    """,
+    "colorful": """
+        <style>
+            body { background-color: #E6E6FA; color: white; }
+            .content-card, .result-card { background-color: #9370DB; color: white; }
+            .title { color: white; }
+        </style>
+    """
+}
 
 # Tema Uygulama Fonksiyonu
 def apply_theme():
-    if st.session_state['theme'] == 'light':
-        st.markdown(light_theme, unsafe_allow_html=True)
-    elif st.session_state['theme'] == 'dark':
-        st.markdown(dark_theme, unsafe_allow_html=True)
-    elif st.session_state['theme'] == 'colorful':
-        st.markdown(colorful_theme, unsafe_allow_html=True)
+    st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
+
+# Giriş sayfası
+def login():
+    st.title("Giriş Yap")
+    st.write("Lütfen kullanıcı adı ve şifre ile giriş yapın.")
+    username = st.text_input("Kullanıcı Adı")
+    password = st.text_input("Şifre", type="password")
+    
+    if st.button("Giriş"):
+        if username == USERNAME and password == PASSWORD:
+            st.session_state['authenticated'] = True
+            st.success("Başarıyla giriş yapıldı!")
+        else:
+            st.error("Kullanıcı adı veya şifre hatalı.")
+
+# Model eğitme ve kaydetme fonksiyonu
+def train_and_save_model():
+    data = pd.read_csv('recruitment_data.csv')
+    X = data.drop('HiringDecision', axis=1)
+    y = data['HiringDecision']
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    
+    predictions = model.predict(X_test)
+    accuracy = accuracy_score(y_test, predictions)
+    print(f"Model Doğruluğu: {accuracy}")
+
+    with open('model.pkl', 'wb') as file:
+        pickle.dump(model, file)
+
+# Modelin varlığını kontrol et ve yoksa eğitip kaydet
+if not os.path.exists('model.pkl'):
+    train_and_save_model()
+
+# Ana uygulama sayfası
+def main_app():
+    # Tema Uygulama
+    apply_theme()
+
+    # Tema Butonları
+    if st.sidebar.button("Aydınlık Tema"):
+        st.session_state['theme'] = 'light'
+        apply_theme()
+    if st.sidebar.button("Karanlık Tema"):
+        st.session_state['theme'] = 'dark'
+        apply_theme()
+    if st.sidebar.button("Renkli Tema"):
+        st.session_state['theme'] = 'colorful'
+        apply_theme()
 
 # Giriş sayfası
 def login():
