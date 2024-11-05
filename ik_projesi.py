@@ -6,8 +6,8 @@ from sklearn.metrics import accuracy_score
 import streamlit as st
 
 # Kullanıcı bilgileri (Örnek olarak sabit bir kullanıcı adı ve şifre)
-USERNAME = "miray"
-PASSWORD = "123456"
+USERNAME = "user"
+PASSWORD = "password"
 
 # Giriş durumu kontrolü için oturum durumu ayarlama
 if 'authenticated' not in st.session_state:
@@ -22,7 +22,7 @@ def login():
     password = st.text_input("Şifre", type="password")
     
     if st.button("Giriş"):
-        if username == miray and password == 123456:
+        if username == USERNAME and password == PASSWORD:
             st.session_state['authenticated'] = True
             st.success("Başarıyla giriş yapıldı!")
         else:
