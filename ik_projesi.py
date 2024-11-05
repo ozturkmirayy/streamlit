@@ -39,18 +39,17 @@ st.set_page_config(
 )
 
 # Markdown Oluşturma
-st.markdown("Bu proje, adayların işe alınma ihtimalini tahmin etmek için bir makine öğrenmesi modelini kullanmaktadır. Uygulama, adayın yaşı, eğitim seviyesi, iş deneyimi, şirketten uzaklığı ve cinsiyet gibi verilerle eğitilmiş bir modelle tahmin yapar.")
+st.markdown("Merhaba! Bu uygulama, adayların işe alım sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir. Adayların yaş, eğitim seviyesi, iş deneyimi, şirketten uzaklık gibi bilgilerini girerek, işe alınma olasılıklarını hızlı bir şekilde görebilirsiniz.")
 
 # Streamlit başlık
 st.title("İşe Alınma Tahmin Uygulaması")
 
 st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp")
 
-st.markdown("After the latest developments in the artificial intelligence industry, they expect us to develop a **machine learning model** in line with their needs and help them with their research.")
-st.markdown("In addition, when they have information about a new house, they want us to come up with a product that we can predict where this house will be based on this information.")
-st.markdown("*Let's help them!*")
+st.markdown("Bu uygulama, geçmiş verilerden elde edilen bir makine öğrenmesi modeli kullanarak tahminler yapmaktadır. Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali “Alınacak” veya “Alınmayacak” olarak belirlenir.")
+st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
-st.image("https://resources.pollfish.com/wp-content/uploads/2020/11/MARKET_RESEARCH_FOR_REAL_ESTATE_IN_CONTENT_1.png")
+st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-1.webp")
 
 # Kullanıcı girişi fonksiyonu
 def get_user_input():
