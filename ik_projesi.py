@@ -3,6 +3,8 @@ import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
 
 # Kullanıcı bilgileri
@@ -165,6 +167,9 @@ def main_app():
     if st.sidebar.button("Tahmin Yap"):
         prediction = loaded_model.predict(user_input)
         display_prediction(prediction, user_input)
+        
+        # En yakın eşleşen işe alınmış adayın bilgilerini gösterme
+        show_closest_match(user_input)
 
 # Tahmin sonucunu ve aday özelliklerini gösterme
 def display_prediction(prediction, user_input):
@@ -180,18 +185,27 @@ def display_prediction(prediction, user_input):
             {result_text}
         </div>
     """, unsafe_allow_html=True)
-    
-    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    st.subheader("Aday Özellikleri")
-    st.write(f"Yaş: {user_input['Age'][0]}")
-    st.write(f"Eğitim Seviyesi: {user_input['EducationLevel'][0]}")
-    st.write(f"Deneyim Yılı: {user_input['ExperienceYears'][0]}")
-    st.write(f"Şirketten Uzaklık: {user_input['DistanceFromCompany'][0]} km")
-    st.write(f"Cinsiyet: {'Erkek' if user_input['Gender'][0] == 0 else 'Kadın'}")
-    st.markdown("</div>", unsafe_allow_html=True)
 
-# Giriş yapılıp yapılmadığını kontrol et
-if not st.session_state['authenticated']:
-    login()
-else:
-    main_app()
+# En yakın işe alınmış çalışanı gösterme
+def show_closest_match(user_input):
+    data = pd.read_csv('recruitment_data.csv')
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
+
+    # Tüm özellikleri normalize et
+    scaler = MinMaxScaler()
+    data_scaled = scaler.fit_transform(hired_data)
+    user_scaled = scaler.transform(user_input)
+
+    # En benzer adayı bulma
+    similarity_scores = cosine_similarity(data_scaled, user_scaled)
+    closest_index = similarity_scores.argmax()
+    closest_match = hired_data.iloc[closest_index]
+
+    # En yakın eşleşmeyi görüntüleme
+    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+    st.subheader("En Yakın Eşleşen Çalışan Bilgileri")
+    st.write(f"Yaş: {closest_match['Age']}")
+    st.write(f"Eğitim Seviyesi: {closest_match['EducationLevel']}")
+    st.write(f"Deneyim Yılı: {closest_match['ExperienceYears']}")
+    st.write(f"Şirketten Uzaklık: {closest_match['DistanceFromCompany']} km")
+    st.write(f"Cinsiyet: {'Erkek' if closest_match['Gender']
