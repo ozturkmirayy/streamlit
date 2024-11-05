@@ -47,7 +47,7 @@ themes = {
 # Tema Uygulama Fonksiyonu
 def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
-
+    
 # Giriş sayfası
 def login():
     st.title("Giriş Yap")
