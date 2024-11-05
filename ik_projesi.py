@@ -126,11 +126,25 @@ def main_app():
     # Tahmin yapma
     prediction = loaded_model.predict(user_input)
 
+    # Tahmin sonucunu daha şık bir şekilde göstermek
+    def display_prediction(prediction):
+        if prediction[0] == 1:
+            # Alınacak durumu için yeşil bir kart
+            st.markdown("""
+                <div style="padding: 20px; background-color: #D4EDDA; border: 1px solid #C3E6CB; border-radius: 8px; text-align: center; color: #155724; font-size: 24px; font-weight: bold;">
+                    ✅ İŞE ALINACAK
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Alınmayacak durumu için kırmızı bir kart
+            st.markdown("""
+                <div style="padding: 20px; background-color: #F8D7DA; border: 1px solid #F5C6CB; border-radius: 8px; text-align: center; color: #721C24; font-size: 24px; font-weight: bold;">
+                    ❌ İŞE ALINMAYACAK
+                </div>
+            """, unsafe_allow_html=True)
+
     # Tahmin sonucunu gösterme
-    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-    st.subheader('Tahmin Sonucu')
-    st.write('İşe Alınma Durumu: {}'.format('Alınacak' if prediction[0] == 1 else 'Alınmayacak'))
-    st.markdown("</div>", unsafe_allow_html=True)
+    display_prediction(prediction)
 
 # Giriş yapılıp yapılmadığını kontrol et
 if not st.session_state['authenticated']:
