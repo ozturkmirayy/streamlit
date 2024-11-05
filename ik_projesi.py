@@ -44,6 +44,14 @@ st.markdown("Bu proje, adayların işe alınma ihtimalini tahmin etmek için bir
 # Streamlit başlık
 st.title("İşe Alınma Tahmin Uygulaması")
 
+st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp")
+
+st.markdown("After the latest developments in the artificial intelligence industry, they expect us to develop a **machine learning model** in line with their needs and help them with their research.")
+st.markdown("In addition, when they have information about a new house, they want us to come up with a product that we can predict where this house will be based on this information.")
+st.markdown("*Let's help them!*")
+
+st.image("https://resources.pollfish.com/wp-content/uploads/2020/11/MARKET_RESEARCH_FOR_REAL_ESTATE_IN_CONTENT_1.png")
+
 # Kullanıcı girişi fonksiyonu
 def get_user_input():
     age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
