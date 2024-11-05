@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
+import os
 
 # Kullanıcı bilgileri
 USERNAME = "user"
@@ -99,52 +100,6 @@ def main_app():
         st.session_state['theme'] = 'colorful'
         apply_theme()
 
-# Giriş sayfası
-def login():
-    st.title("Giriş Yap")
-    st.write("Lütfen kullanıcı adı ve şifre ile giriş yapın.")
-    username = st.text_input("Kullanıcı Adı")
-    password = st.text_input("Şifre", type="password")
-    
-    if st.button("Giriş"):
-        if username == USERNAME and password == PASSWORD:
-            st.session_state['authenticated'] = True
-            st.success("Başarıyla giriş yapıldı!")
-        else:
-            st.error("Kullanıcı adı veya şifre hatalı.")
-
-# Model eğitimi ve uygulama ana sayfası
-def main_app():
-    # Model eğitim fonksiyonu
-    def train_model():
-        data = pd.read_csv('recruitment_data.csv')
-        X = data.drop('HiringDecision', axis=1)
-        y = data['HiringDecision']
-        
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        model = RandomForestClassifier()
-        model.fit(X_train, y_train)
-        predictions = model.predict(X_test)
-        accuracy = accuracy_score(y_test, predictions)
-        print(f"Model Doğruluğu: {accuracy}")
-
-        with open('model.pkl', 'wb') as file:
-            pickle.dump(model, file)
-
-    # Tema Uygulama
-    apply_theme()
-
-    # Tema Butonları
-    if st.sidebar.button("Aydınlık Tema"):
-        st.session_state['theme'] = 'light'
-        apply_theme()
-    if st.sidebar.button("Karanlık Tema"):
-        st.session_state['theme'] = 'dark'
-        apply_theme()
-    if st.sidebar.button("Renkli Tema"):
-        st.session_state['theme'] = 'colorful'
-        apply_theme()
-
     # Sayfa tasarımı ve stil
     st.markdown("""
         <style>
@@ -186,8 +141,6 @@ def main_app():
     def get_user_input():
         st.sidebar.header("Aday Bilgileri")
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
-        st.sidebar.caption("Adayın yaşını girin (18-65)")
-        
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
         distance = st.sidebar.slider('Şirketten Uzaklık (km)', 0, 100, 10)
