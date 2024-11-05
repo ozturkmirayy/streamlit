@@ -21,26 +21,13 @@ if 'theme' not in st.session_state:
 
 # Tema CSS Kodları
 light_theme = """
-   st.markdown("""
-        <style>
-        .main {
-            background-color: #FFFFFF;
-            padding: 20px;
-        }
-        .content-card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .result-card {
-            background-color: #F0F8FF;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #4B0082;
-            text-align: center;
-        }
-        </style>
+    <style>
+        body { background-color: white; color: black; }
+        .content-card, .result-card { background-color: white; color: black; }
+        .title { color: black; }
+    </style>
+"""
+
 dark_theme = """
     <style>
         body { background-color: black; color: white; }
