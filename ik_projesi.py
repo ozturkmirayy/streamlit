@@ -51,6 +51,8 @@ def train_and_save_model():
 if not os.path.exists('model.pkl'):
     train_and_save_model()
 
+# Ana uygulama sayfası
+def main_app():
     # Sayfa tasarımı ve stil
     st.markdown("""
         <style>
