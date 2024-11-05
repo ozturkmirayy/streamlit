@@ -52,6 +52,8 @@ st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi
 
 st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
+st.sidebar.markdown("**Choose** the features below to see the result!")
+
 # Kullanıcı girişi fonksiyonu
 def get_user_input():
     age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
