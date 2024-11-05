@@ -6,8 +6,8 @@ from sklearn.metrics import accuracy_score
 import streamlit as st
 
 # Kullanıcı bilgileri (Örnek olarak sabit bir kullanıcı adı ve şifre)
-USERNAME = "user"
-PASSWORD = "password"
+USERNAME = "miray"
+PASSWORD = "123456"
 
 # Giriş durumu kontrolü için oturum durumu ayarlama
 if 'authenticated' not in st.session_state:
