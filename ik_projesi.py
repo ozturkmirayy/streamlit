@@ -201,13 +201,17 @@ def show_closest_match(user_input):
     closest_index = similarity_scores.argmax()
     closest_match = hired_data.iloc[closest_index]
 
+    # Eğitim seviyesini metin olarak getirme
+    education_mapping = {1: 'Önlisans', 2: 'Lisans', 3: 'Yüksek Lisans', 4: 'Doktora'}
+    closest_education = education_mapping[closest_match['EducationLevel']]
+
     # En yakın eşleşmeyi görüntüleme
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.subheader("En Yakın Eşleşen Çalışan Bilgileri")
     st.write(f"Yaş: {closest_match['Age']}")
-    st.write(f"Eğitim Seviyesi: {closest_match['EducationLevel']}")
-    st.write(f"Deneyim Yılı: {closest_match['ExperienceYears']}")
-    st.write(f"Şirketten Uzaklık: {closest_match['DistanceFromCompany']} km")
+    st.write(f"Eğitim Seviyesi: {closest_education}")
+    st.write(f"Deneyim Yılı: {int(closest_match['ExperienceYears'])}")
+    st.write(f"Şirketten Uzaklık: {round(closest_match['DistanceFromCompany'])} km")
     st.write(f"Cinsiyet: {'Erkek' if closest_match['Gender'] == 0 else 'Kadın'}")
     st.markdown("</div>", unsafe_allow_html=True)
 
