@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import streamlit as st
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Kullanıcı bilgileri (Örnek olarak sabit bir kullanıcı adı ve şifre)
 USERNAME = "user"
@@ -129,22 +131,45 @@ def main_app():
     # Tahmin sonucunu daha şık bir şekilde göstermek
     def display_prediction(prediction):
         if prediction[0] == 1:
-            # Alınacak durumu için yeşil bir kart
             st.markdown("""
                 <div style="padding: 20px; background-color: #D4EDDA; border: 1px solid #C3E6CB; border-radius: 8px; text-align: center; color: #155724; font-size: 24px; font-weight: bold;">
-                    ✅ İŞE ALINABİLİR
+                    ✅ İŞE ALINACAK
                 </div>
             """, unsafe_allow_html=True)
         else:
-            # Alınmayacak durumu için kırmızı bir kart
             st.markdown("""
                 <div style="padding: 20px; background-color: #F8D7DA; border: 1px solid #F5C6CB; border-radius: 8px; text-align: center; color: #721C24; font-size: 24px; font-weight: bold;">
-                    ❌ İŞE ALINMAYABİLİR
+                    ❌ İŞE ALINMAYACAK
                 </div>
             """, unsafe_allow_html=True)
 
     # Tahmin sonucunu gösterme
     display_prediction(prediction)
+
+    # Aday benzerliği tahmini (öneri sistemi) bölümü
+    st.header("Aday Benzerlik Tahmini")
+    
+    file_path = 'recruitment_data.csv'
+    data = pd.read_csv(file_path)
+    
+    # Özellikleri seçme ve ölçeklendirme
+    features = data[['SkillScore', 'ExperienceYears']]
+    scaler = MinMaxScaler()
+    features_scaled = scaler.fit_transform(features)
+    
+    # Benzerlik matrisini hesaplama
+    similarity_matrix = cosine_similarity(features_scaled)
+    
+    # Öneri fonksiyonu
+    def get_recommendations(employee_index, similarity_matrix, data, top_n=5):
+        similar_indices = similarity_matrix[employee_index].argsort()[::-1][1:top_n+1]
+        return data.iloc[similar_indices]
+
+    # Aday seçimi ve önerilerin gösterimi
+    employee_index = st.selectbox("Aday Seçin", range(len(data)), format_func=lambda x: f"Aday {x}")
+    recommendations = get_recommendations(employee_index, similarity_matrix, data)
+    st.subheader("Benzer Adaylar")
+    st.write(recommendations[['Age', 'SkillScore', 'ExperienceYears']])
 
 # Giriş yapılıp yapılmadığını kontrol et
 if not st.session_state['authenticated']:
