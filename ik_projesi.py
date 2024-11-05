@@ -30,27 +30,43 @@ st.set_page_config(
     page_icon="https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp",
 )
 
-# Sayfa arka plan rengi ve bileşenlerin stilini özelleştirme
+# Sayfa arka plan rengi ve genel stil
 st.markdown("""
     <style>
     .main {
-        background-color: #E6E6FA; /* Ana sayfa arka plan rengi */
-        color: #333333; /* Genel metin rengi */
+        background-color: #E6E6FA; /* Lila arka plan rengi */
+        padding: 20px;
     }
     .stSidebar {
-        background-color: #E6E6FA; /* Yan menü arka plan rengi */
+        background-color: #D8BFD8; /* Sidebar lila tonları */
+    }
+    .content-card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .result-card {
+        background-color: #F0F8FF;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #4B0082;
+        text-align: center;
     }
     .stButton>button {
         color: white;
-        background-color: #E6E6FA; /* Buton rengi */
+        background-color: #4CAF50; /* Buton rengi */
+        font-size: 16px;
+        padding: 10px 20px;
     }
     .stNumberInput>label, .stSelectbox>label, .stSlider>label {
-        color: #4CAF50; /* Giriş bileşenleri etiket rengi */
+        color: #4B0082; /* Giriş bileşenleri etiket rengi */
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Açıklama ve görseller
+# Başlık ve açıklama kartı
+st.markdown("<div class='content-card'>", unsafe_allow_html=True)
 st.title("İşe Alınma Tahmin Uygulaması")
 st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=300)
 st.markdown("""
@@ -58,6 +74,7 @@ st.markdown("""
     Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali "Alınacak" veya "Alınmayacak" olarak belirlenir.
 """)
 st.markdown("**Önemli Not**: Bu uygulama yalnızca bilgilendirme amaçlıdır. İşe alım kararlarını desteklemek amacıyla kullanılabilir ancak tek başına karar için yeterli değildir.")
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Kullanıcı girişi fonksiyonu (sidebar üzerinden yapılacak girişler)
 def get_user_input():
@@ -102,5 +119,7 @@ user_input = user_input.reindex(columns=columns_needed, fill_value=0)
 prediction = loaded_model.predict(user_input)
 
 # Tahmin sonucunu gösterme
+st.markdown("<div class='result-card'>", unsafe_allow_html=True)
 st.subheader('Tahmin Sonucu')
 st.write('İşe Alınma Durumu: {}'.format('Alınacak' if prediction[0] == 1 else 'Alınmayacak'))
+st.markdown("</div>", unsafe_allow_html=True)
