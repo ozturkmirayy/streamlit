@@ -36,10 +36,12 @@ train_model()
 st.set_page_config(
     page_title="İşe Alım Tahminleme",
     page_icon="https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp",
-    menu_items={
-        "Get help": "mailto:e.mirayozturkk@gmail.com",
     }
 )
+
+# Markdown Oluşturma
+st.markdown("A research company wants to decide whether this house is in **:red[New York City]** or **:red[San Francisco]** by looking at the various features of the houses they have.")
+
 # Streamlit başlık
 st.title("İşe Alınma Tahmin Uygulaması")
 
