@@ -165,8 +165,12 @@ def main_app():
         similar_indices = similarity_matrix[employee_index].argsort()[::-1][1:top_n+1]
         return data.iloc[similar_indices]
 
-    # Aday seçimi ve önerilerin gösterimi
-    employee_index = st.selectbox("Aday Seçin", range(len(data)), format_func=lambda x: f"Aday {x}")
+    # Aday seçimi ve açıklayıcı seçenek gösterimi
+    def candidate_label(index):
+        return f"Yaş: {data.iloc[index]['Age']}, Deneyim: {data.iloc[index]['ExperienceYears']} yıl"
+
+    # Aday seçim ve önerilerin gösterimi
+    employee_index = st.selectbox("Aday Seçin", range(len(data)), format_func=candidate_label)
     recommendations = get_recommendations(employee_index, similarity_matrix, data)
     st.subheader("Benzer Adaylar")
     st.write(recommendations[['Age', 'SkillScore', 'ExperienceYears']])
