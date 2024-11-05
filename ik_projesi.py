@@ -22,7 +22,7 @@ def login():
     password = st.text_input("Şifre", type="password")
     
     if st.button("Giriş"):
-        if username == USERNAME and password == PASSWORD:
+        if username == miray and password == 123456:
             st.session_state['authenticated'] = True
             st.success("Başarıyla giriş yapıldı!")
         else:
