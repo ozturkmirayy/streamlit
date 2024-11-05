@@ -53,6 +53,46 @@ st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi
 st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
 st.sidebar.markdown("**Choose** the features below to see the result!")
+ age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
+    education = st.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+    experience = st.slider('Deneyim (Yıl)', 0, 40, 5)
+    distance = st.slider('Şirketten Uzaklık (km)', 0, 100, 10)
+    gender = st.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
+
+user_data = {
+        'Age': age, 
+        'EducationLevel': education_num, 
+        'ExperienceYears': experience,
+        'DistanceFromCompany': distance,
+        'Gender': gender_num
+    }
+    
+    features = pd.DataFrame(user_data, index=[0])
+    return features
+
+# Kullanıcı girdisini alma
+user_input = get_user_input()
+
+# Modeli yükleme
+with open('model.pkl', 'rb') as file:
+    loaded_model = pickle.load(file)
+
+# Kullanıcı girdisini modelin ihtiyaç duyduğu sütun düzenine göre yeniden düzenleme
+columns_needed = loaded_model.feature_names_in_
+user_input = user_input.reindex(columns=columns_needed, fill_value=0)
+
+# Tahmin yapma
+prediction = loaded_model.predict(user_input)
+
+# Tahmin sonucunu gösterme
+st.subheader('Tahmin Sonucu')
+st.write('İşe Alınma Durumu: {}'.format('Alınacak' if prediction[0] == 1 else 'Alınmayacak'))
+
+    education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
+    gender_mapping = {'Erkek': 0, 'Kadın': 1}
+
+    education_num = education_mapping[education]
+    gender_num = gender_mapping[gender]
 
 # Kullanıcı girişi fonksiyonu
 def get_user_input():
