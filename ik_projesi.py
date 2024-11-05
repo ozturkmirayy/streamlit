@@ -170,10 +170,10 @@ def main_app():
 def display_prediction(prediction, user_input):
     if prediction[0] == 1:
         result_class = "result-card"
-        result_text = "✅ İŞE ALINACAK"
+        result_text = "✅ İŞE ALINABİLİR"
     else:
         result_class = "result-card red"
-        result_text = "❌ İŞE ALINMAYACAK"
+        result_text = "❌ İŞE ALINMAYABİLİR"
     
     st.markdown(f"""
         <div class='{result_class}'>
