@@ -15,33 +15,43 @@ PASSWORD = "password"
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
 
-# Tema Seçimi
+# Varsayılan Tema Seçimi
 if 'theme' not in st.session_state:
     st.session_state['theme'] = 'light'
-
-# Tema Değiştirme Fonksiyonu
-def toggle_theme():
-    if st.session_state['theme'] == 'light':
-        st.session_state['theme'] = 'dark'
-    else:
-        st.session_state['theme'] = 'light'
 
 # Tema CSS Kodları
 light_theme = """
     <style>
-        body { background-color: #f4f7fb; }
-        .content-card, .result-card { background-color: white; color: #333333; }
-        .title { color: #333333; }
+        body { background-color: white; color: black; }
+        .content-card, .result-card { background-color: white; color: black; }
+        .title { color: black; }
     </style>
 """
 
 dark_theme = """
     <style>
-        body { background-color: #2b2b2b; color: #ffffff; }
-        .content-card, .result-card { background-color: #3a3a3a; color: #ffffff; }
-        .title { color: #ffffff; }
+        body { background-color: black; color: white; }
+        .content-card, .result-card { background-color: #333333; color: white; }
+        .title { color: white; }
     </style>
 """
+
+colorful_theme = """
+    <style>
+        body { background-color: #E6E6FA; color: white; }
+        .content-card, .result-card { background-color: #9370DB; color: white; }
+        .title { color: white; }
+    </style>
+"""
+
+# Tema Uygulama Fonksiyonu
+def apply_theme():
+    if st.session_state['theme'] == 'light':
+        st.markdown(light_theme, unsafe_allow_html=True)
+    elif st.session_state['theme'] == 'dark':
+        st.markdown(dark_theme, unsafe_allow_html=True)
+    elif st.session_state['theme'] == 'colorful':
+        st.markdown(colorful_theme, unsafe_allow_html=True)
 
 # Giriş sayfası
 def login():
@@ -59,6 +69,7 @@ def login():
 
 # Model eğitimi ve uygulama ana sayfası
 def main_app():
+    # Model eğitim fonksiyonu
     def train_model():
         data = pd.read_csv('recruitment_data.csv')
         X = data.drop('HiringDecision', axis=1)
@@ -74,18 +85,19 @@ def main_app():
         with open('model.pkl', 'wb') as file:
             pickle.dump(model, file)
 
-    if 'model_trained' not in st.session_state:
-        train_model()
-        st.session_state['model_trained'] = True
-
     # Tema Uygulama
-    if st.session_state['theme'] == 'light':
-        st.markdown(light_theme, unsafe_allow_html=True)
-    else:
-        st.markdown(dark_theme, unsafe_allow_html=True)
-        
-    # Tema Değiştir Butonu
-    st.sidebar.button("Tema Değiştir", on_click=toggle_theme)
+    apply_theme()
+
+    # Tema Butonları
+    if st.sidebar.button("Aydınlık Tema"):
+        st.session_state['theme'] = 'light'
+        apply_theme()
+    if st.sidebar.button("Karanlık Tema"):
+        st.session_state['theme'] = 'dark'
+        apply_theme()
+    if st.sidebar.button("Renkli Tema"):
+        st.session_state['theme'] = 'colorful'
+        apply_theme()
 
     # Sayfa tasarımı ve stil
     st.markdown("""
