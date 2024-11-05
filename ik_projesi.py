@@ -47,9 +47,10 @@ st.title("İşe Alınma Tahmin Uygulaması")
 st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp")
 
 st.markdown("Bu uygulama, geçmiş verilerden elde edilen bir makine öğrenmesi modeli kullanarak tahminler yapmaktadır. Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali “Alınacak” veya “Alınmayacak” olarak belirlenir.")
-st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
 st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-1.webp")
+
+st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
 # Kullanıcı girişi fonksiyonu
 def get_user_input():
