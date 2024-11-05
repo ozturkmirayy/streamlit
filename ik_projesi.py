@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # Markdown Oluşturma
-st.markdown("A research company wants to decide whether this house is in **:red[New York City]** or **:red[San Francisco]** by looking at the various features of the houses they have.")
+st.markdown("Bu proje, adayların işe alınma ihtimalini tahmin etmek için bir makine öğrenmesi modelini kullanmaktadır. Uygulama, adayın yaşı, eğitim seviyesi, iş deneyimi, şirketten uzaklığı ve cinsiyet gibi verilerle eğitilmiş bir modelle tahmin yapar.")
 
 # Streamlit başlık
 st.title("İşe Alınma Tahmin Uygulaması")
