@@ -34,7 +34,7 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main {
-        background-color: #f3f4f6; /* Ana sayfa arka plan rengi */
+        background-color: #DCC6E0; /* Ana sayfa arka plan rengi */
         color: #333333; /* Genel metin rengi */
     }
     .stSidebar {
