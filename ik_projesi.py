@@ -16,39 +16,6 @@ PASSWORD = "password"
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
 
-# Varsayılan Tema
-if 'theme' not in st.session_state:
-    st.session_state['theme'] = 'light'
-
-# Tema CSS Kodları
-themes = {
-    "light": """
-        <style>
-            body { background-color: #FFFFFF; color: black; }
-            .content-card, .result-card { background-color: white; color: black; }
-            .title { color: black; }
-        </style>
-    """,
-    "dark": """
-        <style>
-            body { background-color: #000000; color: white; }
-            .content-card, .result-card { background-color: #333333; color: white; }
-            .title { color: white; }
-        </style>
-    """,
-    "colorful": """
-        <style>
-            body { background-color: #E6E6FA; color: white; }
-            .content-card, .result-card { background-color: #9370DB; color: white; }
-            .title { color: white; }
-        </style>
-    """
-}
-
-# Tema Uygulama Fonksiyonu
-def apply_theme():
-    st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
-    
 # Giriş sayfası
 def login():
     st.title("Giriş Yap")
