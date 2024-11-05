@@ -184,4 +184,14 @@ def display_prediction(prediction, user_input):
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.subheader("Aday Özellikleri")
     st.write(f"Yaş: {user_input['Age'][0]}")
-   
+    st.write(f"Eğitim Seviyesi: {user_input['EducationLevel'][0]}")
+    st.write(f"Deneyim Yılı: {user_input['ExperienceYears'][0]}")
+    st.write(f"Şirketten Uzaklık: {user_input['DistanceFromCompany'][0]} km")
+    st.write(f"Cinsiyet: {'Erkek' if user_input['Gender'][0] == 0 else 'Kadın'}")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Giriş yapılıp yapılmadığını kontrol et
+if not st.session_state['authenticated']:
+    login()
+else:
+    main_app()
