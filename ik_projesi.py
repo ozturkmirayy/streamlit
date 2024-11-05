@@ -53,7 +53,7 @@ st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi
 st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır. Karar sürecinizde insan kaynakları ekiplerinin değerlendirmeleri ve diğer mülakat sonuçları da göz önünde bulundurulmalıdır.")
 
 st.sidebar.markdown("**Choose** the features below to see the result!")
- age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
+    age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
     education = st.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
     experience = st.slider('Deneyim (Yıl)', 0, 40, 5)
     distance = st.slider('Şirketten Uzaklık (km)', 0, 100, 10)
