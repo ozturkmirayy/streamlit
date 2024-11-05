@@ -8,16 +8,12 @@ import streamlit as st
 # Modeli eğitme fonksiyonu
 def train_model():
     data = pd.read_csv('recruitment_data.csv')
-    print(data.columns)
-
     X = data.drop('HiringDecision', axis=1)
     y = data['HiringDecision']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
     model = RandomForestClassifier()
     model.fit(X_train, y_train)
-    
     predictions = model.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
     print(f"Model Doğruluğu: {accuracy}")
@@ -34,20 +30,43 @@ st.set_page_config(
     page_icon="https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp",
 )
 
-# Açıklama metinleri ve görseller
-st.markdown("Merhaba! Bu uygulama, adayların işe alım sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.")
-st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp")
-st.markdown("Bu uygulama, geçmiş verilerden elde edilen bir makine öğrenmesi modeli kullanarak tahminler yapmaktadır. Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali “Alınacak” veya “Alınmayacak” olarak belirlenir.")
-st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-1.webp")
-st.markdown("Önemli Not: Bu uygulama yalnızca bilgilendirme amaçlıdır ve işe alım kararları verirken tek başına kullanılmamalıdır.")
+# Sayfa arka plan rengi ve bileşenlerin stilini özelleştirme
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f3f4f6; /* Ana sayfa arka plan rengi */
+        color: #333333; /* Genel metin rengi */
+    }
+    .stSidebar {
+        background-color: #e1e4ea; /* Yan menü arka plan rengi */
+    }
+    .stButton>button {
+        color: white;
+        background-color: #4CAF50; /* Buton rengi */
+    }
+    .stNumberInput>label, .stSelectbox>label, .stSlider>label {
+        color: #4CAF50; /* Giriş bileşenleri etiket rengi */
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Kullanıcı girişi fonksiyonu
+# Açıklama ve görseller
+st.title("İşe Alınma Tahmin Uygulaması")
+st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=300)
+st.markdown("""
+    Bu uygulama, adayların işe alınma sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.
+    Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali "Alınacak" veya "Alınmayacak" olarak belirlenir.
+""")
+st.markdown("**Önemli Not**: Bu uygulama yalnızca bilgilendirme amaçlıdır. İşe alım kararlarını desteklemek amacıyla kullanılabilir ancak tek başına karar için yeterli değildir.")
+
+# Kullanıcı girişi fonksiyonu (sidebar üzerinden yapılacak girişler)
 def get_user_input():
-    age = st.number_input('Yaş', min_value=18, max_value=65, value=30)
-    education = st.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-    experience = st.slider('Deneyim (Yıl)', 0, 40, 5)
-    distance = st.slider('Şirketten Uzaklık (km)', 0, 100, 10)
-    gender = st.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
+    st.sidebar.header("Aday Bilgileri")
+    age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
+    education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+    experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
+    distance = st.sidebar.slider('Şirketten Uzaklık (km)', 0, 100, 10)
+    gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
 
     # Eğitim seviyesi ve cinsiyet için sayısal değerler
     education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
