@@ -4,10 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import streamlit as st
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics.pairwise import cosine_similarity
 
-# Kullanıcı bilgileri (Örnek olarak sabit bir kullanıcı adı ve şifre)
+# Kullanıcı bilgileri
 USERNAME = "user"
 PASSWORD = "password"
 
@@ -19,7 +17,6 @@ if 'authenticated' not in st.session_state:
 def login():
     st.title("Giriş Yap")
     st.write("Lütfen kullanıcı adı ve şifre ile giriş yapın.")
-
     username = st.text_input("Kullanıcı Adı")
     password = st.text_input("Şifre", type="password")
     
@@ -32,7 +29,6 @@ def login():
 
 # Model eğitimi ve uygulama ana sayfası
 def main_app():
-    # Modeli eğitme fonksiyonu
     def train_model():
         data = pd.read_csv('recruitment_data.csv')
         X = data.drop('HiringDecision', axis=1)
@@ -48,52 +44,74 @@ def main_app():
         with open('model.pkl', 'wb') as file:
             pickle.dump(model, file)
 
-    # Model eğitimi (bir defaya mahsus çalıştırılır)
     if 'model_trained' not in st.session_state:
         train_model()
         st.session_state['model_trained'] = True
 
-    # Sayfa arka plan rengi ve genel stil
+    # Sayfa tasarımı ve stil
     st.markdown("""
         <style>
         .main {
-            background-color: #E6E6FA;
+            background-color: #f4f7fb;
             padding: 20px;
         }
         .content-card {
             background-color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+        .title {
+            color: #333333;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
         }
         .result-card {
-            background-color: #F0F8FF;
-            padding: 15px;
+            background-color: #f1f9f1;
+            padding: 20px;
             border-radius: 8px;
-            border: 2px solid #4B0082;
+            border: 1px solid #b2d8b2;
             text-align: center;
+            color: #155724;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .result-card.red {
+            background-color: #fdecea;
+            border-color: #f5c6cb;
+            color: #721c24;
         }
         </style>
         """, unsafe_allow_html=True)
 
     # Başlık ve açıklama kartı
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    st.title("İşe Alınma Tahmin Uygulaması")
-    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=300)
-    st.markdown("""
-        Bu uygulama, adayların işe alınma sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.
-        Modele girilen bilgiler doğrultusunda, bir adayın işe alınma ihtimali "Alınacak" veya "Alınmayacak" olarak belirlenir.
-    """)
+    st.markdown("<div class='title'>İşe Alınma Tahmin Uygulaması</div>", unsafe_allow_html=True)
+    st.write("Bu uygulama, adayların işe alım sürecinde başarıyla değerlendirilip değerlendirilemeyeceğini öngörmek için geliştirilmiştir.")
+    st.write("Lütfen aday bilgilerini girin ve işe alınma tahminini görmek için tahmin butonuna basın.")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # Kullanıcı girişi fonksiyonu (sidebar üzerinden yapılacak girişler)
     def get_user_input():
         st.sidebar.header("Aday Bilgileri")
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
+        st.sidebar.caption("Adayın yaşını girin (18-65)")
+        
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+        st.sidebar.caption("En yüksek eğitim seviyesini seçin")
+        
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
+        st.sidebar.caption("Adayın iş deneyimini yıllık olarak girin")
+        
         distance = st.sidebar.slider('Şirketten Uzaklık (km)', 0, 100, 10)
+        st.sidebar.caption("Adayın ikamet adresi ile şirket arasındaki mesafeyi girin (km)")
+        
         gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
+        st.sidebar.caption("Cinsiyet seçimini yapın")
 
         # Eğitim seviyesi ve cinsiyet için sayısal değerler
         education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
@@ -102,7 +120,6 @@ def main_app():
         education_num = education_mapping[education]
         gender_num = gender_mapping[gender]
 
-        # Kullanıcı verilerini DataFrame olarak oluşturma
         user_data = {
             'Age': age, 
             'EducationLevel': education_num, 
@@ -126,54 +143,35 @@ def main_app():
     user_input = user_input.reindex(columns=columns_needed, fill_value=0)
 
     # Tahmin yapma
-    prediction = loaded_model.predict(user_input)
+    if st.sidebar.button("Tahmin Yap"):
+        prediction = loaded_model.predict(user_input)
+        display_prediction(prediction, user_input)
 
-    # Tahmin sonucunu daha şık bir şekilde göstermek
-    def display_prediction(prediction):
-        if prediction[0] == 1:
-            st.markdown("""
-                <div style="padding: 20px; background-color: #D4EDDA; border: 1px solid #C3E6CB; border-radius: 8px; text-align: center; color: #155724; font-size: 24px; font-weight: bold;">
-                    ✅ İŞE ALINACAK
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-                <div style="padding: 20px; background-color: #F8D7DA; border: 1px solid #F5C6CB; border-radius: 8px; text-align: center; color: #721C24; font-size: 24px; font-weight: bold;">
-                    ❌ İŞE ALINMAYACAK
-                </div>
-            """, unsafe_allow_html=True)
-
-    # Tahmin sonucunu gösterme
-    display_prediction(prediction)
-
-    # Aday benzerliği tahmini (öneri sistemi) bölümü
-    st.header("Aday Benzerlik Tahmini")
+# Tahmin sonucunu ve aday özelliklerini gösterme
+def display_prediction(prediction, user_input):
+    if prediction[0] == 1:
+        result_class = "result-card"
+        result_text = "✅ İŞE ALINABİLİR"
+        result_color = "#D4EDDA"
+    else:
+        result_class = "result-card red"
+        result_text = "❌ İŞE ALINMAYABİLİR"
+        result_color = "#F8D7DA"
     
-    file_path = 'recruitment_data.csv'
-    data = pd.read_csv(file_path)
+    st.markdown(f"""
+        <div class='{result_class}'>
+            {result_text}
+        </div>
+    """, unsafe_allow_html=True)
     
-    # Özellikleri seçme ve ölçeklendirme
-    features = data[['SkillScore', 'ExperienceYears']]
-    scaler = MinMaxScaler()
-    features_scaled = scaler.fit_transform(features)
-    
-    # Benzerlik matrisini hesaplama
-    similarity_matrix = cosine_similarity(features_scaled)
-    
-    # Öneri fonksiyonu
-    def get_recommendations(employee_index, similarity_matrix, data, top_n=5):
-        similar_indices = similarity_matrix[employee_index].argsort()[::-1][1:top_n+1]
-        return data.iloc[similar_indices]
-
-    # Aday seçimi ve açıklayıcı seçenek gösterimi
-    def candidate_label(index):
-        return f"Yaş: {data.iloc[index]['Age']}, Deneyim: {data.iloc[index]['ExperienceYears']} yıl"
-
-    # Aday seçim ve önerilerin gösterimi
-    employee_index = st.selectbox("Aday Seçin", range(len(data)), format_func=candidate_label)
-    recommendations = get_recommendations(employee_index, similarity_matrix, data)
-    st.subheader("Benzer Adaylar")
-    st.write(recommendations[['Age', 'SkillScore', 'ExperienceYears']])
+    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+    st.subheader("Aday Özellikleri")
+    st.write(f"Yaş: {user_input['Age'][0]}")
+    st.write(f"Eğitim Seviyesi: {user_input['EducationLevel'][0]}")
+    st.write(f"Deneyim Yılı: {user_input['ExperienceYears'][0]}")
+    st.write(f"Şirketten Uzaklık: {user_input['DistanceFromCompany'][0]} km")
+    st.write(f"Cinsiyet: {'Erkek' if user_input['Gender'][0] == 0 else 'Kadın'}")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Giriş yapılıp yapılmadığını kontrol et
 if not st.session_state['authenticated']:
