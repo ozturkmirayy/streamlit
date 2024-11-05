@@ -208,4 +208,11 @@ def show_closest_match(user_input):
     st.write(f"Eğitim Seviyesi: {closest_match['EducationLevel']}")
     st.write(f"Deneyim Yılı: {closest_match['ExperienceYears']}")
     st.write(f"Şirketten Uzaklık: {closest_match['DistanceFromCompany']} km")
-    st.write(f"Cinsiyet: {'Erkek' if closest_match['Gender']
+    st.write(f"Cinsiyet: {'Erkek' if closest_match['Gender'] == 0 else 'Kadın'}")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Giriş yapılıp yapılmadığını kontrol et
+if not st.session_state['authenticated']:
+    login()
+else:
+    main_app()
