@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import streamlit as st
+import os
 
 # Kullanıcı bilgileri (Örnek olarak sabit bir kullanıcı adı ve şifre)
 USERNAME = "user"
@@ -28,30 +29,30 @@ def login():
         else:
             st.error("Kullanıcı adı veya şifre hatalı.")
 
-# Model eğitimi ve uygulama ana sayfası
+# Model eğitme ve kaydetme fonksiyonu
+def train_and_save_model():
+    data = pd.read_csv('recruitment_data.csv')
+    X = data.drop('HiringDecision', axis=1)
+    y = data['HiringDecision']
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    
+    predictions = model.predict(X_test)
+    accuracy = accuracy_score(y_test, predictions)
+    print(f"Model Doğruluğu: {accuracy}")
+
+    with open('model.pkl', 'wb') as file:
+        pickle.dump(model, file)
+
+# Modelin varlığını kontrol et ve yoksa eğitip kaydet
+if not os.path.exists('model.pkl'):
+    train_and_save_model()
+
+# Ana uygulama sayfası
 def main_app():
-    # Modeli eğitme fonksiyonu
-    def train_model():
-        data = pd.read_csv('recruitment_data.csv')
-        X = data.drop('HiringDecision', axis=1)
-        y = data['HiringDecision']
-        
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        model = RandomForestClassifier()
-        model.fit(X_train, y_train)
-        predictions = model.predict(X_test)
-        accuracy = accuracy_score(y_test, predictions)
-        print(f"Model Doğruluğu: {accuracy}")
-
-        with open('model.pkl', 'wb') as file:
-            pickle.dump(model, file)
-
-    # Model eğitimi (bir defaya mahsus çalıştırılır)
-    if 'model_trained' not in st.session_state:
-        train_model()
-        st.session_state['model_trained'] = True
-
-    # Sayfa arka plan rengi ve genel stil
+    # Arka plan ve stil düzenlemeleri
     st.markdown("""
         <style>
         .main {
