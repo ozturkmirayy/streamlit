@@ -3,7 +3,7 @@ import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
-# Theme CSS Code
+# Tema CSS Kodları
 themes = {
     "light": """
         <style>
@@ -22,33 +22,30 @@ themes = {
     """
 }
 
-# Theme Application
+# Tema uygulama
 def apply_theme(theme):
     st.markdown(themes[theme], unsafe_allow_html=True)
 
-# Find Similar Candidates
-def find_similar_candidates(user_input, data):
-    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
+# Veri seti yükleme
+def load_data():
+    uploaded_file = st.sidebar.file_uploader("Veri Setini Yükleyin (CSV Formatında)", type=["csv"])
+    if uploaded_file is not None:
+        return pd.read_csv(uploaded_file)
+    else:
+        st.warning("Lütfen bir veri seti yükleyin.")
+        st.stop()
 
-    # Align user_input with dataset columns
-    user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
-
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(hired_data)
-    user_scaled = scaler.transform(user_input)
-
-    similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
-    top_indices = similarity_scores.argsort()[-3:][::-1]
-    return hired_data.iloc[top_indices]
-
-# Main Application
+# Ana uygulama
 def main_app():
     theme = st.sidebar.selectbox("Tema Seç", ["light", "dark", "colorful"])
     apply_theme(theme)
 
     st.title("İşe Alınma Tahmin Uygulaması")
 
-    # User Input
+    # Veri setini yükle
+    data = load_data()
+
+    # Kullanıcıdan veri alma
     def get_user_input():
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
@@ -71,10 +68,7 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Load Dataset
-    data = pd.read_csv('/mnt/data/recruitment_data (1).csv')
-
-    # Evaluation Logic
+    # Değerlendirme
     def evaluate_candidate(data):
         if (
             data['ExperienceYears'][0] >= 5 and 
@@ -88,28 +82,11 @@ def main_app():
 
     result = evaluate_candidate(user_input)
 
-    # Display Result
-    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+    # Tahmin sonucu
     if result == "İşe Alınabilir":
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Display Similar Candidates
-    similar_candidates = find_similar_candidates(user_input, data)
-    st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
-    for index, candidate in similar_candidates.iterrows():
-        st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['PreviousCompanies']}")
-
-    # Project Description
-    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
-    st.markdown("""
-        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
-        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
-    """)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Run Main Application
+# Ana uygulamayı çalıştır
 main_app()
