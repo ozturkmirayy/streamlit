@@ -26,32 +26,6 @@ def train_model():
 
     return model
 
-# Pozisyona göre deneyim gerekliliklerini kontrol etme
-def check_experience_requirements(position, experience_years):
-    position_requirements = {
-        'Uzman Yardımcısı': 0,
-        'Uzman': 3,
-        'Müdür': 10,
-        'Direktör': 15,
-        'Genel Müdür': 20
-    }
-    required_experience = position_requirements[position]
-    return experience_years >= required_experience
-
-# Detaylı tahmin raporu oluşturma
-def generate_detailed_report(prediction_proba):
-    report = "### Detaylı Tahmin Raporu\n"
-    report += f"- **İşe Alınma Olasılığı**: %{prediction_proba[1] * 100:.2f}\n"
-
-    if prediction_proba[1] > 0.7:
-        report += "\n🟢 **Yüksek Olasılıkla İşe Alınabilir**: Özellikleriniz uygun görünüyor.\n"
-    elif prediction_proba[1] > 0.4:
-        report += "\n🟡 **Orta Olasılıkla İşe Alınabilir**: Mülakat performansınızı geliştirmeyi düşünebilirsiniz.\n"
-    else:
-        report += "\n🔴 **Düşük Olasılıkla İşe Alınabilir**: Deneyim veya eğitim seviyenizi artırmayı düşünebilirsiniz.\n"
-
-    return report
-
 # En yakın çalışanı bulma
 def find_similar_candidates(user_input, data):
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
@@ -113,12 +87,6 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Pozisyon için deneyim gerekliliklerini kontrol et
-    position = user_input['Position'][0]
-    if not check_experience_requirements(position, user_input['ExperienceYears'][0]):
-        st.warning(f"Bu pozisyon için minimum {position} deneyim gerekliliği karşılanmamaktadır!")
-        return
-
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
     user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
     user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
@@ -135,15 +103,13 @@ def main_app():
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Detaylı rapor
-    report = generate_detailed_report(prediction_proba)
-    st.markdown(report)
-
     # En yakın çalışanları bulma ve gösterme
     similar_candidates = find_similar_candidates(user_input, data)
     st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
     for index, candidate in similar_candidates.iterrows():
-        st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['PreviousCompanies']}")
+        st.sidebar.write(
+            f"Yaş: {int(candidate['Age'])}, Deneyim: {int(candidate['ExperienceYears'])} yıl, Şirket Sayısı: {int(candidate['PreviousCompanies'])}"
+        )
 
     # Tanıtım Metni ve Görsel
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
