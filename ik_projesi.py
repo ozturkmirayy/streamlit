@@ -56,21 +56,21 @@ def main_app():
 
     # Kullanıcıdan veri alma
     def get_user_input():
-        position = st.sidebar.selectbox('Pozisyon', ['Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
-        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
-        education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
-        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=1)
-        gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
-        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 50)
-        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 50)
-        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 50)
+        position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
+        age = st.sidebar.number_input('Yaş', min_value=0, max_value=65, value=0)  # Default 0
+        education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)  # Default 0
+        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)  # Default 0
+        gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'])
+        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)  # Default 0
+        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0)  # Default 0
+        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)  # Default 0
 
         # Skorların ortalaması
-        total_score = (interview_score + skill_score + personality_score) / 3
+        total_score = (interview_score + skill_score + personality_score) / 3 if interview_score + skill_score + personality_score > 0 else 0
 
-        education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
-        gender_mapping = {'Erkek': 0, 'Kadın': 1}
+        education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
+        gender_mapping = {'Seçiniz': 0, 'Erkek': 0, 'Kadın': 1}
 
         user_data = {
             'Age': age,
@@ -86,6 +86,11 @@ def main_app():
         return pd.DataFrame(user_data, index=[0])
 
     user_input = get_user_input()
+
+    # Eğer tüm seçimler yapılmadıysa uyarı göster
+    if (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'PreviousCompanies', 'TotalScore']] == 0).all(axis=None):
+        st.info("Lütfen tüm bilgileri doldurunuz!")
+        return
 
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
     user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
