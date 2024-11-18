@@ -12,22 +12,16 @@ themes = {
     "light": """
         <style>
             body { background-color: #FFFFFF; color: black; }
-            .content-card, .result-card { background-color: white; color: black; }
-            .title { color: black; }
         </style>
     """,
     "dark": """
         <style>
             body { background-color: #000000; color: white; }
-            .content-card, .result-card { background-color: #333333; color: white; }
-            .title { color: white; }
         </style>
     """,
     "colorful": """
         <style>
             body { background-color: #E6E6FA; color: white; }
-            .content-card, .result-card { background-color: #9370DB; color: white; }
-            .title { color: white; }
         </style>
     """
 }
@@ -37,8 +31,7 @@ def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
 
 # En yakın çalışanı bulma
-def find_similar_candidates(user_input):
-    data = pd.read_csv('recruitment_data.csv')
+def find_similar_candidates(user_input, data):
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
 
     # Kullanıcı girişini veri setinin sütunlarıyla eşleştir
@@ -64,6 +57,21 @@ def main_app():
 
     st.title("İşe Alınma Tahmin Uygulaması")
 
+    # Kullanıcıdan veri seti yüklemesi
+    uploaded_file = st.sidebar.file_uploader("Veri Setini Yükleyin (CSV Formatında)", type=["csv"])
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
+    else:
+        st.warning("Lütfen bir veri seti yükleyin.")
+        st.stop()
+
+    # Gerekli sütunları kontrol et
+    required_columns = ['Age', 'EducationLevel', 'ExperienceYears', 'CompaniesWorked', 'Gender', 'HiringDecision']
+    missing_columns = [col for col in required_columns if col not in data.columns]
+    if missing_columns:
+        st.error(f"Veri setinde eksik sütunlar var: {missing_columns}")
+        st.stop()
+
     # Kullanıcıdan veri alma
     def get_user_input():
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
@@ -79,8 +87,8 @@ def main_app():
             'Age': age,
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
-            'Gender': gender_mapping[gender],
-            'PreviousCompanies':companies_worked
+            'CompaniesWorked': companies_worked,
+            'Gender': gender_mapping[gender]
         }
         return pd.DataFrame(user_data, index=[0])
 
@@ -104,7 +112,7 @@ def main_app():
     st.markdown("</div>", unsafe_allow_html=True)
 
     # En yakın çalışanları bulma ve gösterme
-    similar_candidates = find_similar_candidates(user_input)
+    similar_candidates = find_similar_candidates(user_input, data)
     st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
     for index, candidate in similar_candidates.iterrows():
         st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['CompaniesWorked']}")
