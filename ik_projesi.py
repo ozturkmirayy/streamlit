@@ -71,8 +71,7 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Load Dataset
-    data = pd.read_csv('/mnt/data/recruitment_data.csv')
+  data = pd.read_csv('recruitment_data.csv')
 
     # Evaluation Logic
     def evaluate_candidate(data):
