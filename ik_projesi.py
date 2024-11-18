@@ -1,18 +1,8 @@
 import pandas as pd
-import pickle
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
-import os
-import json
 import matplotlib.pyplot as plt
 
-# Varsayılan oturum ve tema ayarları
+# Varsayılan tema ayarları
 if 'theme' not in st.session_state:
     st.session_state['theme'] = 'light'
 
@@ -45,73 +35,12 @@ themes = {
 def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
 
-# Model eğitme ve kaydetme fonksiyonu
-def train_and_save_model(selected_algorithm):
-    data = pd.read_csv('recruitment_data.csv')
-    X = data.drop('HiringDecision', axis=1)
-    y = data['HiringDecision']
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    if selected_algorithm == "Random Forest":
-        model = RandomForestClassifier()
-    elif selected_algorithm == "Logistic Regression":
-        model = LogisticRegression()
-    elif selected_algorithm == "XGBoost":
-        model = XGBClassifier()
-    
-    model.fit(X_train, y_train)
-    predictions = model.predict(X_test)
-    accuracy = accuracy_score(y_test, predictions)
-    st.write(f"Model Doğruluğu: {accuracy}")
-
-    with open('model.pkl', 'wb') as file:
-        pickle.dump(model, file)
-
-# Tahmin sonucu görselleştirme
-def plot_prediction(prediction):
-    labels = ['Alınmayacak', 'Alınacak']
-    values = [1 - prediction[0], prediction[0]]
-
-    fig, ax = plt.subplots()
-    ax.bar(labels, values, color=['red', 'green'])
-    st.pyplot(fig)
-
-# En yakın çalışan bilgilerini gösterme
-def show_closest_match(user_input):
-    data = pd.read_csv('recruitment_data.csv')
-    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
-
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(hired_data)
-    user_scaled = scaler.transform(user_input)
-
-    similarity_scores = cosine_similarity(data_scaled, user_scaled)
-    closest_index = similarity_scores.argmax()
-    closest_match = hired_data.iloc[closest_index]
-
-    education_mapping = {1: 'Önlisans', 2: 'Lisans', 3: 'Yüksek Lisans', 4: 'Doktora'}
-    closest_education = education_mapping[closest_match['EducationLevel']]
-
-    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    st.subheader("En Yakın Eşleşen Çalışan Bilgileri")
-    st.write(f"Yaş: {closest_match['Age']}")
-    st.write(f"Eğitim Seviyesi: {closest_education}")
-    st.write(f"Deneyim Yılı: {int(closest_match['ExperienceYears'])}")
-    st.write(f"Şirketten Uzaklık: {round(closest_match['DistanceFromCompany'])} km")
-    st.write(f"Cinsiyet: {'Erkek' if closest_match['Gender'] == 0 else 'Kadın'}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
 # Ana uygulama
 def main_app():
+    # Tema uygulama
     apply_theme()
     
-    algorithm = st.sidebar.selectbox("Model Algoritması", ["Random Forest", "Logistic Regression", "XGBoost"])
-    
-    if st.sidebar.button("Model Güncelle"):
-        train_and_save_model(algorithm)
-        st.success("Model başarıyla güncellendi!")
-
+    # Tema butonları
     st.sidebar.button("Aydınlık Tema", on_click=lambda: st.session_state.update({'theme': 'light'}))
     st.sidebar.button("Karanlık Tema", on_click=lambda: st.session_state.update({'theme': 'dark'}))
     st.sidebar.button("Renkli Tema", on_click=lambda: st.session_state.update({'theme': 'colorful'}))
@@ -123,36 +52,39 @@ def main_app():
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
-        distance = st.sidebar.slider('Şirketten Uzaklık (km)', 0, 100, 10)
+        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=1)
         gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
-
-        education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
-        gender_mapping = {'Erkek': 0, 'Kadın': 1}
 
         user_data = {
             'Age': age,
-            'EducationLevel': education_mapping[education],
+            'EducationLevel': education,
             'ExperienceYears': experience,
-            'DistanceFromCompany': distance,
-            'Gender': gender_mapping[gender],
+            'CompaniesWorked': companies_worked,
+            'Gender': gender,
         }
         return pd.DataFrame(user_data, index=[0])
 
     user_input = get_user_input()
-    with open('model.pkl', 'rb') as file:
-        model = pickle.load(file)
 
-    columns_needed = model.feature_names_in_
-    user_input = user_input.reindex(columns=columns_needed, fill_value=0)
-    prediction = model.predict(user_input)
+    # Basit işe alım kriterleri
+    def evaluate_candidate(data):
+        # Basit kurallar:
+        # Deneyim >= 5 yıl ve Çalıştığı Şirket Sayısı >= 2 ise "İşe Alınabilir"
+        # Aksi halde "İşe Alınamaz"
+        if data['ExperienceYears'][0] >= 5 and data['CompaniesWorked'][0] >= 2:
+            return "İşe Alınabilir"
+        else:
+            return "İşe Alınamaz"
 
-    if prediction[0] == 1:
-        st.success("✅ İŞE ALINACAK")
+    result = evaluate_candidate(user_input)
+
+    # Tahmin sonucunu gösterme
+    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+    if result == "İşe Alınabilir":
+        st.success("✅ İŞE ALINABİLİR")
     else:
-        st.error("❌ İŞE ALINMAYACAK")
+        st.error("❌ İŞE ALINAMAZ")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    plot_prediction(prediction)
-    show_closest_match(user_input)
-
-# Sabit bir kullanıcı ile doğrudan giriş
+# Ana uygulamayı çalıştır
 main_app()
