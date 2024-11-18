@@ -76,6 +76,9 @@ def main_app():
 
     user_input = get_user_input()
 
+    # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
+    user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
+
     # Tahmin yapma
     prediction = model.predict(user_input)
 
