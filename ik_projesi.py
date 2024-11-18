@@ -7,39 +7,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
 
-# Varsayılan tema ayarları
-if 'theme' not in st.session_state:
-    st.session_state['theme'] = 'light'
-
-# Tema CSS Kodları
-themes = {
-    "light": """
-        <style>
-            body { background-color: #FFFFFF; color: black; }
-            .content-card, .result-card { background-color: white; color: black; }
-            .title { color: black; }
-        </style>
-    """,
-    "dark": """
-        <style>
-            body { background-color: #000000; color: white; }
-            .content-card, .result-card { background-color: #333333; color: white; }
-            .title { color: white; }
-        </style>
-    """,
-    "colorful": """
-        <style>
-            body { background-color: #E6E6FA; color: white; }
-            .content-card, .result-card { background-color: #9370DB; color: white; }
-            .title { color: white; }
-        </style>
-    """
-}
-
-# Tema uygulama
-def apply_theme():
-    st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
-
 # Veri seti okuma ve model eğitme
 def train_model():
     data = pd.read_csv('recruitment_data.csv')
@@ -76,13 +43,6 @@ def find_similar_candidates(user_input, data):
 
 # Ana uygulama
 def main_app():
-    apply_theme()
-    
-    # Tema butonları
-    st.sidebar.button("Aydınlık Tema", on_click=lambda: st.session_state.update({'theme': 'light'}))
-    st.sidebar.button("Karanlık Tema", on_click=lambda: st.session_state.update({'theme': 'dark'}))
-    st.sidebar.button("Renkli Tema", on_click=lambda: st.session_state.update({'theme': 'colorful'}))
-
     st.title("İşe Alınma Tahmin Uygulaması")
 
     # Veri setini yükle
