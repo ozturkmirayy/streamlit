@@ -67,10 +67,15 @@ def main_app():
 
         user_data = {
             'Age': age,
+            'Gender': gender_mapping[gender],
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
-            'CompaniesWorked': companies_worked,
-            'Gender': gender_mapping[gender]
+            'PreviousCompanies': companies_worked,
+            'DistanceFromCompany': 0,  # Placeholder, actual distance is not used
+            'InterviewScore': 50,  # Default value
+            'SkillScore': 50,  # Default value
+            'PersonalityScore': 50,  # Default value
+            'RecruitmentStrategy': 1  # Default value
         }
         return pd.DataFrame(user_data, index=[0])
 
@@ -94,7 +99,7 @@ def main_app():
     similar_candidates = find_similar_candidates(user_input, data)
     st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
     for index, candidate in similar_candidates.iterrows():
-        st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['CompaniesWorked']}")
+        st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['PreviousCompanies']}")
 
     # Tanıtım Metni ve Görsel
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
