@@ -1,7 +1,11 @@
 import pandas as pd
 import streamlit as st
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pickle
 
 # Varsayılan tema ayarları
 if 'theme' not in st.session_state:
@@ -12,16 +16,22 @@ themes = {
     "light": """
         <style>
             body { background-color: #FFFFFF; color: black; }
+            .content-card, .result-card { background-color: white; color: black; }
+            .title { color: black; }
         </style>
     """,
     "dark": """
         <style>
             body { background-color: #000000; color: white; }
+            .content-card, .result-card { background-color: #333333; color: white; }
+            .title { color: white; }
         </style>
     """,
     "colorful": """
         <style>
             body { background-color: #E6E6FA; color: white; }
+            .content-card, .result-card { background-color: #9370DB; color: white; }
+            .title { color: white; }
         </style>
     """
 }
@@ -29,6 +39,25 @@ themes = {
 # Tema uygulama
 def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
+
+# Veri seti okuma ve model eğitme
+def train_model():
+    data = pd.read_csv('recruitment_data.csv')
+    X = data.drop(columns=['HiringDecision'])
+    y = data['HiringDecision']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
+
+    predictions = model.predict(X_test)
+    accuracy = accuracy_score(y_test, predictions)
+    st.sidebar.write(f"Model Doğruluğu: {accuracy:.2f}")
+
+    with open('model.pkl', 'wb') as f:
+        pickle.dump(model, f)
+
+    return model
 
 # En yakın çalışanı bulma
 def find_similar_candidates(user_input, data):
@@ -38,12 +67,11 @@ def find_similar_candidates(user_input, data):
     user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
     scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(hired_data)  # Eğitim verisini ölçekle
-    user_scaled = scaler.transform(user_input)     # Kullanıcı girişini ölçekle
+    data_scaled = scaler.fit_transform(hired_data)
+    user_scaled = scaler.transform(user_input)
 
-    # Benzerlik hesaplama
     similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
-    top_indices = similarity_scores.argsort()[-3:][::-1]  # En benzer ilk 3
+    top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
 # Ana uygulama
@@ -57,20 +85,14 @@ def main_app():
 
     st.title("İşe Alınma Tahmin Uygulaması")
 
-    # Kullanıcıdan veri seti yüklemesi
-    uploaded_file = st.sidebar.file_uploader("Veri Setini Yükleyin (CSV Formatında)", type=["csv"])
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
-    else:
-        st.warning("Lütfen bir veri seti yükleyin.")
-        st.stop()
+    # Veri setini yükle
+    data = pd.read_csv('recruitment_data.csv')
 
-    # Gerekli sütunları kontrol et
-    required_columns = ['Age', 'EducationLevel', 'ExperienceYears', 'CompaniesWorked', 'Gender', 'HiringDecision']
-    missing_columns = [col for col in required_columns if col not in data.columns]
-    if missing_columns:
-        st.error(f"Veri setinde eksik sütunlar var: {missing_columns}")
-        st.stop()
+    # Model yükleme veya eğitme
+    if 'model' not in st.session_state:
+        st.session_state['model'] = train_model()
+
+    model = st.session_state['model']
 
     # Kullanıcıdan veri alma
     def get_user_input():
@@ -94,18 +116,12 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Basit işe alım kriterleri
-    def evaluate_candidate(data):
-        if data['ExperienceYears'][0] >= 5 and data['CompaniesWorked'][0] >= 2:
-            return "İşe Alınabilir"
-        else:
-            return "İşe Alınamaz"
-
-    result = evaluate_candidate(user_input)
+    # Tahmin yapma
+    prediction = model.predict(user_input)
 
     # Tahmin sonucunu gösterme
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-    if result == "İşe Alınabilir":
+    if prediction[0] == 1:
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
