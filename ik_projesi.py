@@ -26,6 +26,24 @@ def train_model():
 
     return model
 
+# Detaylı tahmin raporu oluşturma
+def generate_detailed_report(user_input, prediction_proba):
+    report = "### Detaylı Tahmin Raporu\n"
+    report += f"- **Yaş**: {user_input['Age'][0]}\n"
+    report += f"- **Eğitim Seviyesi**: {user_input['EducationLevel'][0]}\n"
+    report += f"- **Deneyim Yılı**: {user_input['ExperienceYears'][0]}\n"
+    report += f"- **Çalıştığı Şirket Sayısı**: {user_input['PreviousCompanies'][0]}\n"
+    report += f"- **İşe Alınma Olasılığı**: %{prediction_proba[1] * 100:.2f}\n"
+
+    if prediction_proba[1] > 0.7:
+        report += "\n🟢 **Yüksek Olasılıkla İşe Alınabilir**: Özellikleriniz uygun görünüyor.\n"
+    elif prediction_proba[1] > 0.4:
+        report += "\n🟡 **Orta Olasılıkla İşe Alınabilir**: Mülakat performansınızı geliştirmeyi düşünebilirsiniz.\n"
+    else:
+        report += "\n🔴 **Düşük Olasılıkla İşe Alınabilir**: Deneyim veya eğitim seviyenizi artırmayı düşünebilirsiniz.\n"
+
+    return report
+
 # En yakın çalışanı bulma
 def find_similar_candidates(user_input, data):
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
@@ -71,11 +89,11 @@ def main_app():
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
             'PreviousCompanies': companies_worked,
-            'DistanceFromCompany': 0,  # Placeholder, actual distance is not used
-            'InterviewScore': 50,  # Default value
-            'SkillScore': 50,  # Default value
-            'PersonalityScore': 50,  # Default value
-            'RecruitmentStrategy': 1  # Default value
+            'DistanceFromCompany': 0,  # Placeholder
+            'InterviewScore': 50,  # Varsayılan değer
+            'SkillScore': 50,  # Varsayılan değer
+            'PersonalityScore': 50,  # Varsayılan değer
+            'RecruitmentStrategy': 1  # Varsayılan değer
         }
         return pd.DataFrame(user_data, index=[0])
 
@@ -85,6 +103,7 @@ def main_app():
     user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
 
     # Tahmin yapma
+    prediction_proba = model.predict_proba(user_input)[0]
     prediction = model.predict(user_input)
 
     # Tahmin sonucunu gösterme
@@ -94,6 +113,10 @@ def main_app():
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
+
+    # Detaylı rapor
+    report = generate_detailed_report(user_input, prediction_proba)
+    st.markdown(report)
 
     # En yakın çalışanları bulma ve gösterme
     similar_candidates = find_similar_candidates(user_input, data)
