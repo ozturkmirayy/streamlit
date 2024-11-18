@@ -12,33 +12,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 
-# Kullanıcı bilgileri için JSON dosyası
-USER_DB_FILE = 'users.json'
-
-# Kullanıcı veritabanını yükleme
-def load_user_db():
-    if not os.path.exists(USER_DB_FILE):
-        return {}
-    with open(USER_DB_FILE, 'r') as file:
-        return json.load(file)
-
-# Kullanıcı doğrulama
-def authenticate(username, password):
-    users = load_user_db()
-    if username in users and users[username] == password:
-        return True
-    return False
-
-# Yeni kullanıcı ekleme
-def add_user(username, password):
-    users = load_user_db()
-    users[username] = password
-    with open(USER_DB_FILE, 'w') as file:
-        json.dump(users, file)
-
 # Varsayılan oturum ve tema ayarları
-if 'authenticated' not in st.session_state:
-    st.session_state['authenticated'] = False
 if 'theme' not in st.session_state:
     st.session_state['theme'] = 'light'
 
@@ -70,26 +44,6 @@ themes = {
 # Tema uygulama
 def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
-
-# Giriş sayfası
-def login():
-    st.title("Giriş Yap")
-    username = st.text_input("Kullanıcı Adı")
-    password = st.text_input("Şifre", type="password")
-    
-    if st.button("Giriş"):
-        if authenticate(username, password):
-            st.session_state['authenticated'] = True
-            st.success("Başarıyla giriş yapıldı!")
-        else:
-            st.error("Kullanıcı adı veya şifre hatalı.")
-    
-    if st.button("Kayıt Ol"):
-        new_username = st.text_input("Yeni Kullanıcı Adı", key="new_user")
-        new_password = st.text_input("Yeni Şifre", type="password", key="new_pass")
-        if new_username and new_password:
-            add_user(new_username, new_password)
-            st.success("Kullanıcı başarıyla eklendi!")
 
 # Model eğitme ve kaydetme fonksiyonu
 def train_and_save_model(selected_algorithm):
@@ -200,7 +154,5 @@ def main_app():
     plot_prediction(prediction)
     show_closest_match(user_input)
 
-if not st.session_state['authenticated']:
-    login()
-else:
-    main_app()
+# Sabit bir kullanıcı ile doğrudan giriş
+main_app()
