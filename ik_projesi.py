@@ -2,7 +2,6 @@ import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
-import os
 
 # Varsayılan tema ayarları
 if 'theme' not in st.session_state:
@@ -42,10 +41,14 @@ def find_similar_candidates(user_input):
     data = pd.read_csv('recruitment_data.csv')
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
 
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(hired_data)
-    user_scaled = scaler.transform(user_input)
+    # Kullanıcı girişini veri setinin sütunlarıyla eşleştir
+    user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
+    scaler = MinMaxScaler()
+    data_scaled = scaler.fit_transform(hired_data)  # Eğitim verisini ölçekle
+    user_scaled = scaler.transform(user_input)     # Kullanıcı girişini ölçekle
+
+    # Benzerlik hesaplama
     similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
     top_indices = similarity_scores.argsort()[-3:][::-1]  # En benzer ilk 3
     return hired_data.iloc[top_indices]
