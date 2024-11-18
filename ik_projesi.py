@@ -26,13 +26,21 @@ def train_model():
 
     return model
 
+# Pozisyona göre deneyim gerekliliklerini kontrol etme
+def check_experience_requirements(position, experience_years):
+    position_requirements = {
+        'Uzman Yardımcısı': 0,
+        'Uzman': 3,
+        'Müdür': 10,
+        'Direktör': 15,
+        'Genel Müdür': 20
+    }
+    required_experience = position_requirements[position]
+    return experience_years >= required_experience
+
 # Detaylı tahmin raporu oluşturma
-def generate_detailed_report(user_input, prediction_proba):
+def generate_detailed_report(prediction_proba):
     report = "### Detaylı Tahmin Raporu\n"
-    report += f"- **Yaş**: {user_input['Age'][0]}\n"
-    report += f"- **Eğitim Seviyesi**: {user_input['EducationLevel'][0]}\n"
-    report += f"- **Deneyim Yılı**: {user_input['ExperienceYears'][0]}\n"
-    report += f"- **Çalıştığı Şirket Sayısı**: {user_input['PreviousCompanies'][0]}\n"
     report += f"- **İşe Alınma Olasılığı**: %{prediction_proba[1] * 100:.2f}\n"
 
     if prediction_proba[1] > 0.7:
@@ -74,11 +82,18 @@ def main_app():
 
     # Kullanıcıdan veri alma
     def get_user_input():
+        position = st.sidebar.selectbox('Pozisyon', ['Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
         age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
         companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=1)
         gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
+        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 50)
+        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 50)
+        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 50)
+
+        # Skorların ortalaması
+        total_score = (interview_score + skill_score + personality_score) / 3
 
         education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
         gender_mapping = {'Erkek': 0, 'Kadın': 1}
@@ -90,16 +105,22 @@ def main_app():
             'ExperienceYears': experience,
             'PreviousCompanies': companies_worked,
             'DistanceFromCompany': 0,  # Placeholder
-            'InterviewScore': 50,  # Varsayılan değer
-            'SkillScore': 50,  # Varsayılan değer
-            'PersonalityScore': 50,  # Varsayılan değer
-            'RecruitmentStrategy': 1  # Varsayılan değer
+            'TotalScore': total_score,
+            'RecruitmentStrategy': 1,  # Default value
+            'Position': position
         }
         return pd.DataFrame(user_data, index=[0])
 
     user_input = get_user_input()
 
+    # Pozisyon için deneyim gerekliliklerini kontrol et
+    position = user_input['Position'][0]
+    if not check_experience_requirements(position, user_input['ExperienceYears'][0]):
+        st.warning(f"Bu pozisyon için minimum {position} deneyim gerekliliği karşılanmamaktadır!")
+        return
+
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
+    user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
     user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
 
     # Tahmin yapma
@@ -115,7 +136,7 @@ def main_app():
     st.markdown("</div>", unsafe_allow_html=True)
 
     # Detaylı rapor
-    report = generate_detailed_report(user_input, prediction_proba)
+    report = generate_detailed_report(prediction_proba)
     st.markdown(report)
 
     # En yakın çalışanları bulma ve gösterme
