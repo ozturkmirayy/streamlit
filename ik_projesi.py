@@ -79,7 +79,6 @@ def main_app():
             'Age': age,
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
-            'CompaniesWorked': companies_worked,
             'Gender': gender_mapping[gender],
             'PreviousCompanies':companies_worked
         }
