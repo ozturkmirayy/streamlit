@@ -1,6 +1,8 @@
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
+import os
 
 # Varsayılan tema ayarları
 if 'theme' not in st.session_state:
@@ -35,9 +37,21 @@ themes = {
 def apply_theme():
     st.markdown(themes[st.session_state['theme']], unsafe_allow_html=True)
 
+# En yakın çalışanı bulma
+def find_similar_candidates(user_input):
+    data = pd.read_csv('recruitment_data.csv')
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
+
+    scaler = MinMaxScaler()
+    data_scaled = scaler.fit_transform(hired_data)
+    user_scaled = scaler.transform(user_input)
+
+    similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
+    top_indices = similarity_scores.argsort()[-3:][::-1]  # En benzer ilk 3
+    return hired_data.iloc[top_indices]
+
 # Ana uygulama
 def main_app():
-    # Tema uygulama
     apply_theme()
     
     # Tema butonları
@@ -55,12 +69,15 @@ def main_app():
         companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=1)
         gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
 
+        education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
+        gender_mapping = {'Erkek': 0, 'Kadın': 1}
+
         user_data = {
             'Age': age,
-            'EducationLevel': education,
+            'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
             'CompaniesWorked': companies_worked,
-            'Gender': gender,
+            'Gender': gender_mapping[gender],
         }
         return pd.DataFrame(user_data, index=[0])
 
@@ -68,9 +85,6 @@ def main_app():
 
     # Basit işe alım kriterleri
     def evaluate_candidate(data):
-        # Basit kurallar:
-        # Deneyim >= 5 yıl ve Çalıştığı Şirket Sayısı >= 2 ise "İşe Alınabilir"
-        # Aksi halde "İşe Alınamaz"
         if data['ExperienceYears'][0] >= 5 and data['CompaniesWorked'][0] >= 2:
             return "İşe Alınabilir"
         else:
@@ -84,6 +98,21 @@ def main_app():
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # En yakın çalışanları bulma ve gösterme
+    similar_candidates = find_similar_candidates(user_input)
+    st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
+    for index, candidate in similar_candidates.iterrows():
+        st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['CompaniesWorked']}")
+
+    # Tanıtım Metni ve Görsel
+    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
+    st.markdown("""
+        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
+        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
+    """)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Ana uygulamayı çalıştır
