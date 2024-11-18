@@ -7,7 +7,53 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
 
-# Veri seti okuma ve model eğitme
+# Çoklu Dil Desteği
+LANGUAGES = {
+    "Türkçe": {
+        "title": "İşe Alınma Tahmin Uygulaması",
+        "position_label": "Pozisyon",
+        "age_label": "Yaş",
+        "education_label": "Eğitim Seviyesi",
+        "experience_label": "Deneyim (Yıl)",
+        "companies_label": "Çalıştığı Şirket Sayısı",
+        "gender_label": "Cinsiyet",
+        "interview_label": "Mülakat Skoru",
+        "skill_label": "Beceri Skoru",
+        "personality_label": "Kişilik Skoru",
+        "recommendations": "Öneriler",
+        "result_hire": "✅ İŞE ALINABİLİR",
+        "result_not_hire": "❌ İŞE ALINAMAZ",
+        "detailed_report": "### Detaylı Tahmin Raporu",
+        "similar_candidates": "En Yakın İşe Alınmış Çalışanlar",
+        "min_experience_warning": "Bu pozisyon için minimum {position} deneyim gerekliliği karşılanmamaktadır!",
+        "image_caption": "Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.",
+    },
+    "English": {
+        "title": "Hiring Prediction Application",
+        "position_label": "Position",
+        "age_label": "Age",
+        "education_label": "Education Level",
+        "experience_label": "Experience (Years)",
+        "companies_label": "Number of Companies Worked",
+        "gender_label": "Gender",
+        "interview_label": "Interview Score",
+        "skill_label": "Skill Score",
+        "personality_label": "Personality Score",
+        "recommendations": "Recommendations",
+        "result_hire": "✅ HIREABLE",
+        "result_not_hire": "❌ NOT HIREABLE",
+        "detailed_report": "### Detailed Prediction Report",
+        "similar_candidates": "Most Similar Hired Candidates",
+        "min_experience_warning": "The minimum experience requirement for the {position} position is not met!",
+        "image_caption": "This application is designed to support your recruitment process.",
+    }
+}
+
+# Kullanıcı Dilini Belirleme
+def get_language():
+    return st.sidebar.radio("Dil / Language", options=["Türkçe", "English"])
+
+# Model Eğitme
 def train_model():
     data = pd.read_csv('recruitment_data.csv')
     X = data.drop(columns=['HiringDecision'])
@@ -19,44 +65,27 @@ def train_model():
 
     predictions = model.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
-    st.sidebar.write(f"Model Doğruluğu: {accuracy:.2f}")
+    st.sidebar.write(f"Model Accuracy: {accuracy:.2f}")
 
     with open('model.pkl', 'wb') as f:
         pickle.dump(model, f)
 
     return model
 
-# Pozisyona göre deneyim gerekliliklerini kontrol etme
-def check_experience_requirements(position, experience_years):
-    position_requirements = {
-        'Uzman Yardımcısı': 0,
-        'Uzman': 3,
-        'Müdür': 10,
-        'Direktör': 15,
-        'Genel Müdür': 20
-    }
-    required_experience = position_requirements[position]
-    return experience_years >= required_experience
+# Öneriler Oluşturma
+def generate_recommendations(position, experience_years, total_score):
+    recommendations = []
+    if position == "Müdür" and experience_years < 10:
+        recommendations.append("Daha fazla deneyim kazanın.")
+    if total_score < 60:
+        recommendations.append("Mülakat performansınızı artırmaya odaklanın.")
+    if len(recommendations) == 0:
+        recommendations.append("Her şey harika görünüyor!")
+    return recommendations
 
-# Detaylı tahmin raporu oluşturma
-def generate_detailed_report(prediction_proba):
-    report = "### Detaylı Tahmin Raporu\n"
-    report += f"- **İşe Alınma Olasılığı**: %{prediction_proba[1] * 100:.2f}\n"
-
-    if prediction_proba[1] > 0.7:
-        report += "\n🟢 **Yüksek Olasılıkla İşe Alınabilir**: Özellikleriniz uygun görünüyor.\n"
-    elif prediction_proba[1] > 0.4:
-        report += "\n🟡 **Orta Olasılıkla İşe Alınabilir**: Mülakat performansınızı geliştirmeyi düşünebilirsiniz.\n"
-    else:
-        report += "\n🔴 **Düşük Olasılıkla İşe Alınabilir**: Deneyim veya eğitim seviyenizi artırmayı düşünebilirsiniz.\n"
-
-    return report
-
-# En yakın çalışanı bulma
+# En Yakın Çalışanları Bulma
 def find_similar_candidates(user_input, data):
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
-
-    # Kullanıcı girişini veri setinin sütunlarıyla eşleştir
     user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
     scaler = MinMaxScaler()
@@ -67,32 +96,34 @@ def find_similar_candidates(user_input, data):
     top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
-# Ana uygulama
+# Ana Uygulama
 def main_app():
-    st.title("İşe Alınma Tahmin Uygulaması")
+    lang = get_language()
+    labels = LANGUAGES[lang]
 
-    # Veri setini yükle
+    st.title(labels["title"])
+
+    # Veri Setini Yükle
     data = pd.read_csv('recruitment_data.csv')
 
-    # Model yükleme veya eğitme
+    # Model Yükleme veya Eğitme
     if 'model' not in st.session_state:
         st.session_state['model'] = train_model()
 
     model = st.session_state['model']
 
-    # Kullanıcıdan veri alma
+    # Kullanıcıdan Veri Alma
     def get_user_input():
-        position = st.sidebar.selectbox('Pozisyon', ['Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
-        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=30)
-        education = st.sidebar.selectbox('Eğitim Seviyesi', ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 5)
-        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=1)
-        gender = st.sidebar.selectbox('Cinsiyet', ['Erkek', 'Kadın'])
-        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 50)
-        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 50)
-        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 50)
+        position = st.sidebar.selectbox(labels["position_label"], ['Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
+        age = st.sidebar.number_input(labels["age_label"], min_value=18, max_value=65, value=30)
+        education = st.sidebar.selectbox(labels["education_label"], ['Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+        experience = st.sidebar.slider(labels["experience_label"], 0, 40, 5)
+        companies_worked = st.sidebar.number_input(labels["companies_label"], min_value=0, max_value=20, value=1)
+        gender = st.sidebar.selectbox(labels["gender_label"], ['Erkek', 'Kadın'])
+        interview_score = st.sidebar.slider(labels["interview_label"], 0, 100, 50)
+        skill_score = st.sidebar.slider(labels["skill_label"], 0, 100, 50)
+        personality_score = st.sidebar.slider(labels["personality_label"], 0, 100, 50)
 
-        # Skorların ortalaması
         total_score = (interview_score + skill_score + personality_score) / 3
 
         education_mapping = {'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
@@ -104,55 +135,46 @@ def main_app():
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
             'PreviousCompanies': companies_worked,
-            'DistanceFromCompany': 0,  # Placeholder
             'TotalScore': total_score,
-            'RecruitmentStrategy': 1,  # Default value
-            'Position': position
         }
-        return pd.DataFrame(user_data, index=[0])
+        return pd.DataFrame(user_data, index=[0]), position, total_score
 
-    user_input = get_user_input()
+    user_input, position, total_score = get_user_input()
 
-    # Pozisyon için deneyim gerekliliklerini kontrol et
-    position = user_input['Position'][0]
-    if not check_experience_requirements(position, user_input['ExperienceYears'][0]):
-        st.warning(f"Bu pozisyon için minimum {position} deneyim gerekliliği karşılanmamaktadır!")
+    # Pozisyona Göre Gereksinimleri Kontrol Et
+    if position == "Müdür" and user_input['ExperienceYears'][0] < 10:
+        st.warning(labels["min_experience_warning"].format(position=position))
         return
 
-    # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
-    user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
-    user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
-
-    # Tahmin yapma
+    # Model Tahmini
     prediction_proba = model.predict_proba(user_input)[0]
     prediction = model.predict(user_input)
 
-    # Tahmin sonucunu gösterme
+    # Tahmin Sonucu
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     if prediction[0] == 1:
-        st.success("✅ İŞE ALINABİLİR")
+        st.success(labels["result_hire"])
     else:
-        st.error("❌ İŞE ALINAMAZ")
+        st.error(labels["result_not_hire"])
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Detaylı rapor
-    report = generate_detailed_report(prediction_proba)
-    st.markdown(report)
+    # Öneriler
+    st.subheader(labels["recommendations"])
+    recommendations = generate_recommendations(position, user_input['ExperienceYears'][0], total_score)
+    for rec in recommendations:
+        st.write(f"- {rec}")
 
-    # En yakın çalışanları bulma ve gösterme
+    # En Yakın Çalışanlar
     similar_candidates = find_similar_candidates(user_input, data)
-    st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
+    st.sidebar.subheader(labels["similar_candidates"])
     for index, candidate in similar_candidates.iterrows():
         st.sidebar.write(f"Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Şirket Sayısı: {candidate['PreviousCompanies']}")
 
-    # Tanıtım Metni ve Görsel
+    # Görsel ve Metin
     st.markdown("<div class='content-card'>", unsafe_allow_html=True)
     st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
-    st.markdown("""
-        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
-        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
-    """)
+    st.markdown(labels["image_caption"])
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Ana uygulamayı çalıştır
+# Ana Uygulamayı Çalıştır
 main_app()
