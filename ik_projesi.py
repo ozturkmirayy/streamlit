@@ -41,16 +41,6 @@ def find_similar_candidates(user_input, data):
     top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
-# Öneriler
-def get_suggestions():
-    return [
-        "Teknik becerilerinizi geliştirmek için eğitimlere katılabilirsiniz.",
-        "Mülakat pratiği yaparak iletişim yeteneklerinizi artırabilirsiniz.",
-        "Alanınızda deneyim kazanmak için kısa süreli projelerde çalışabilirsiniz.",
-        "Özgeçmişinizi gözden geçirip daha etkili hale getirebilirsiniz.",
-        "Şirket kültürü ve pozisyon beklentileri hakkında daha fazla bilgi edinin."
-    ]
-
 # Pozisyona göre minimum deneyim yılları
 position_experience_requirements = {
     "Uzman Yardımcısı": 0,
@@ -112,10 +102,11 @@ def main_app():
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
-    # Pozisyon seçildiyse ve deneyim yılı girildiyse uyarı göster
+    # Pozisyon seçildiyse ve deneyim yılı yeterli değilse hiçbir sonuç göstermeme
     required_experience = position_experience_requirements[user_input['Position'][0]]
     if user_input['ExperienceYears'][0] < required_experience:
         st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
+        return
 
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
     user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
@@ -131,9 +122,6 @@ def main_app():
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
-        st.write("**Gelişim Önerileri:**")
-        for suggestion in get_suggestions():
-            st.write(f"- {suggestion}")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # Sağ taraftaki görsel ve yazılar
