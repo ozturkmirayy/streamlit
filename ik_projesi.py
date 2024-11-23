@@ -41,6 +41,15 @@ def find_similar_candidates(user_input, data):
     top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
+# Pozisyona göre minimum deneyim yılları
+position_experience_requirements = {
+    "Uzman Yardımcısı": 0,
+    "Uzman": 2,
+    "Müdür": 5,
+    "Direktör": 10,
+    "Genel Müdür": 15
+}
+
 # Ana uygulama
 def main_app():
     st.title("İşe Alınma Tahmin Uygulaması")
@@ -86,6 +95,12 @@ def main_app():
         return pd.DataFrame(user_data, index=[0])
 
     user_input = get_user_input()
+
+    # Pozisyon ve deneyim kontrolü
+    if user_input['Position'][0] != 'Seçiniz':
+        required_experience = position_experience_requirements[user_input['Position'][0]]
+        if user_input['ExperienceYears'][0] < required_experience:
+            st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
 
     # Eğer tüm seçimler yapılmadıysa uyarı göster
     if (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'PreviousCompanies', 'TotalScore']] == 0).all(axis=None):
