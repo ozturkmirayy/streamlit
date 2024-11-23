@@ -79,7 +79,7 @@ def main_app():
         total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
 
         education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
-        gender_mapping = {'Seçiniz': 0, 'Erkek': 0, 'Kadın': 1}
+        gender_mapping = {'Seçiniz': None, 'Erkek': 0, 'Kadın': 1}
 
         user_data = {
             'Age': age,
@@ -96,7 +96,7 @@ def main_app():
     # Eksik bilgi kontrolü
     if (
         position == 'Seçiniz'
-        or user_input['Gender'].iloc[0] == 0
+        or user_input['Gender'].iloc[0] is None
         or user_input['EducationLevel'].iloc[0] == 0
         or user_input['TotalScore'].iloc[0] == 0
     ):
