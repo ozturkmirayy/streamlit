@@ -98,7 +98,7 @@ def main_app():
 
     # Eksik bilgi kontrolü
     required_columns = ['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']
-    if user_input['Position'][0] == 'Seçiniz' or user_input[required_columns].isin([0]).any().any():
+    if user_input['Position'][0] == 'Seçiniz' or (user_input[required_columns] == 0).any().any():
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
