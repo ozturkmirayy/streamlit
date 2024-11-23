@@ -46,19 +46,19 @@ def generate_dynamic_suggestions(user_input, required_experience):
     suggestions = []
 
     # Deneyim eksikliği kontrolü
-    if user_input['ExperienceYears'][0] < required_experience:
+    if user_input['ExperienceYears'].iloc[0] < required_experience:
         suggestions.append(f"Pozisyon için gerekli minimum deneyim yılı: {required_experience}. Daha fazla deneyim kazanmaya çalışabilirsiniz.")
 
     # Toplam skor eksikliği kontrolü
-    if 'TotalScore' in user_input.columns and user_input['TotalScore'][0] < 60:
+    if user_input['TotalScore'].iloc[0] < 60:
         suggestions.append("Mülakat, beceri veya kişilik skorlarınızı geliştirmek için eğitimlere katılabilirsiniz.")
 
     # Eğitim seviyesi eksikliği kontrolü
-    if 'EducationLevel' in user_input.columns and user_input['EducationLevel'][0] < 2:
+    if user_input['EducationLevel'].iloc[0] < 2:
         suggestions.append("Eğitim seviyenizi artırmak için lisans veya yüksek lisans programlarına katılabilirsiniz.")
 
     # Şirket deneyimi kontrolü
-    if 'PreviousCompanies' in user_input.columns and user_input['PreviousCompanies'][0] < 2:
+    if user_input['PreviousCompanies'].iloc[0] < 2:
         suggestions.append("Farklı sektörlerde veya şirketlerde deneyim kazanmayı düşünebilirsiniz.")
 
     return suggestions
@@ -102,17 +102,7 @@ def get_user_input():
         'Position': position
     }
 
-    # DataFrame oluşturulurken sütunların eksiksiz eklendiğini kontrol et
-    user_input_df = pd.DataFrame(user_data, index=[0])
-
-    # DataFrame'de eksik sütunların olmaması için hataları önleme
-    expected_columns = ['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'PreviousCompanies',
-                        'DistanceFromCompany', 'TotalScore', 'RecruitmentStrategy', 'Position']
-    for col in expected_columns:
-        if col not in user_input_df.columns:
-            user_input_df[col] = 0
-
-    return user_input_df
+    return pd.DataFrame(user_data, index=[0])
 
 # Ana uygulama
 def main_app():
@@ -133,16 +123,16 @@ def main_app():
     # Eksik bilgi kontrolü
     if (
         user_input['Position'][0] == 'Seçiniz'
-        or user_input['Gender'][0] is None
-        or user_input['EducationLevel'][0] is None
-        or user_input['TotalScore'][0] == 0
+        or user_input['Gender'].iloc[0] is None
+        or user_input['EducationLevel'].iloc[0] is None
+        or user_input['TotalScore'].iloc[0] == 0
     ):
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
     # Pozisyon için minimum deneyim kontrolü
     required_experience = position_experience_requirements[user_input['Position'][0]]
-    if user_input['ExperienceYears'][0] < required_experience:
+    if user_input['ExperienceYears'].iloc[0] < required_experience:
         st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
         return
 
@@ -162,8 +152,11 @@ def main_app():
         st.error("❌ İŞE ALINAMAZ")
         st.write("### Gelişim Önerileri:")
         suggestions = generate_dynamic_suggestions(user_input, required_experience)
-        for suggestion in suggestions:
-            st.write(f"- {suggestion}")
+        if suggestions:
+            for suggestion in suggestions:
+                st.write(f"- {suggestion}")
+        else:
+            st.write("Gelişim önerisi bulunmamaktadır.")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # Sağ taraftaki görsel ve yazılar
