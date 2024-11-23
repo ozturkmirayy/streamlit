@@ -26,7 +26,7 @@ def train_model():
 
     return model
 
-# En yakın çalışanı bulma
+# En yakın işe alınan çalışanları bulma
 def find_similar_candidates(user_input, data):
     hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
 
@@ -66,14 +66,14 @@ def main_app():
     # Kullanıcıdan veri alma
     def get_user_input():
         position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
-        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)  # Minimum yaş 18
+        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)  # Default 0
-        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)  # Default 0
+        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)
+        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)
         gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'])
-        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)  # Default 0
-        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0)  # Default 0
-        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)  # Default 0
+        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)
+        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0)
+        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)
 
         # Skorların ortalaması
         total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
@@ -87,10 +87,9 @@ def main_app():
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
             'PreviousCompanies': companies_worked,
-            'DistanceFromCompany': 0,  # Placeholder
+            'DistanceFromCompany': 0,
             'TotalScore': total_score,
-            'RecruitmentStrategy': 1,  # Default value
-            'Position': position
+            'RecruitmentStrategy': 1
         }
         return pd.DataFrame(user_data, index=[0])
 
@@ -98,22 +97,21 @@ def main_app():
 
     # Eksik bilgi kontrolü
     if (
-        user_input['Position'][0] == 'Seçiniz'
-        or user_input['Gender'][0] is None
+        user_input['Gender'][0] is None
         or user_input['EducationLevel'][0] is None
         or user_input['TotalScore'][0] == 0
     ):
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
-    # Pozisyon seçildiyse ve deneyim yılı yeterli değilse hiçbir sonuç göstermeme
+    # Pozisyon seçimi kontrolü
     required_experience = position_experience_requirements[user_input['Position'][0]]
     if user_input['ExperienceYears'][0] < required_experience:
         st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
         return
 
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
-    user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
+    user_input = user_input.drop(columns=['Position'])
     user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
 
     # Tahmin yapma
@@ -124,6 +122,10 @@ def main_app():
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     if prediction[0] == 1:
         st.success("✅ İŞE ALINABİLİR")
+        similar_candidates = find_similar_candidates(user_input, data)
+        st.write("### En Yakın İşe Alınan Çalışanlar:")
+        for index, candidate in similar_candidates.iterrows():
+            st.write(f"- Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Toplam Skor: {candidate['TotalScore']:.1f}")
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
