@@ -109,6 +109,9 @@ def main_app():
         st.warning(f"{position} pozisyonu için minimum {required_experience} yıl deneyim gereklidir.")
         return
 
+    # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
+    user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
+
     # Tahmin yapma
     prediction_proba = model.predict_proba(user_input)[0]
     prediction = model.predict(user_input)
