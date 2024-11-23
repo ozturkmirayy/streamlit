@@ -66,7 +66,7 @@ def main_app():
     # Kullanıcıdan veri alma
     def get_user_input():
         position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
-        age = st.sidebar.number_input('Yaş', min_value=0, max_value=65, value=0)  # Default 0
+        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)  # Minimum yaş 18
         education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
         experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)  # Default 0
         companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)  # Default 0
@@ -96,8 +96,8 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Pozisyon ve deneyim kontrolü
-    if user_input['Position'][0] != 'Seçiniz':
+    # Pozisyon seçildiyse ve deneyim yılı girildiyse uyarı göster
+    if user_input['Position'][0] != 'Seçiniz' and user_input['ExperienceYears'][0] > 0:
         required_experience = position_experience_requirements[user_input['Position'][0]]
         if user_input['ExperienceYears'][0] < required_experience:
             st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
