@@ -61,15 +61,15 @@ position_experience_requirements = {
 
 # Kullanıcıdan veri alma
 def get_user_input():
-    position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
-    age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)
-    education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
-    experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)
-    companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)
-    gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'])
-    interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)
-    skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0)
-    personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)
+    position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'], key="position_selectbox")
+    age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18, key="age_input")
+    education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'], key="education_selectbox")
+    experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0, key="experience_slider")
+    companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0, key="companies_input")
+    gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'], key="gender_selectbox")
+    interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0, key="interview_score_slider")
+    skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0, key="skill_score_slider")
+    personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0, key="personality_score_slider")
 
     # Skorların ortalaması
     total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
@@ -110,12 +110,8 @@ def main_app():
         return
 
     # Pozisyon seçimi ve minimum deneyim kontrolü
-    position = st.sidebar.selectbox('Pozisyon', ['Seçiniz'] + list(position_experience_requirements.keys()))
-    if position == 'Seçiniz':
-        st.warning("Lütfen pozisyon seçiniz.")
-        return
-
-    required_experience = position_experience_requirements[position]
+    position = user_input['Position'][0]
+    required_experience = position_experience_requirements.get(position, 0)
     if user_input.loc[0, 'ExperienceYears'] < required_experience:
         st.warning(f"{position} pozisyonu için minimum {required_experience} yıl deneyim gereklidir.")
         return
