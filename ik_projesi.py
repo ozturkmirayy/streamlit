@@ -41,6 +41,16 @@ def find_similar_candidates(user_input, data):
     top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
+# Öneriler
+def get_suggestions():
+    return [
+        "Teknik becerilerinizi geliştirmek için eğitimlere katılabilirsiniz.",
+        "Mülakat pratiği yaparak iletişim yeteneklerinizi artırabilirsiniz.",
+        "Alanınızda deneyim kazanmak için kısa süreli projelerde çalışabilirsiniz.",
+        "Özgeçmişinizi gözden geçirip daha etkili hale getirebilirsiniz.",
+        "Şirket kültürü ve pozisyon beklentileri hakkında daha fazla bilgi edinin."
+    ]
+
 # Pozisyona göre minimum deneyim yılları
 position_experience_requirements = {
     "Uzman Yardımcısı": 0,
@@ -121,15 +131,19 @@ def main_app():
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
+        st.write("**Gelişim Önerileri:**")
+        for suggestion in get_suggestions():
+            st.write(f"- {suggestion}")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # En yakın çalışanları bulma ve gösterme
-    similar_candidates = find_similar_candidates(user_input, data)
-    st.sidebar.subheader("En Yakın İşe Alınmış Çalışanlar")
-    for index, candidate in similar_candidates.iterrows():
-        st.sidebar.write(
-            f"Yaş: {int(candidate['Age'])}, Deneyim: {int(candidate['ExperienceYears'])} yıl, Şirket Sayısı: {int(candidate['PreviousCompanies'])}"
-        )
+    # Sağ taraftaki görsel ve yazılar
+    st.sidebar.markdown("<div class='content-card'>", unsafe_allow_html=True)
+    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
+    st.markdown("""
+        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
+        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Ana uygulamayı çalıştır
 main_app()
