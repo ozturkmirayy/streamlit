@@ -121,9 +121,10 @@ def main_app():
     if prediction[0] == 1:
         st.success("✅ İŞE ALINABİLİR")
         similar_candidates = find_similar_candidates(user_input, data)
-        st.write("### En Yakın İşe Alınan Çalışanlar:")
+
+        # Sütunlar mevcut değilse hata oluşmasını önlemek için kontrol
         for index, candidate in similar_candidates.iterrows():
-            st.write(f"- Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl, Toplam Skor: {candidate['TotalScore']:.1f}")
+            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl, Toplam Skor: {candidate.get('TotalScore', 0):.1f}")
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
