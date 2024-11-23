@@ -102,9 +102,9 @@ def main_app():
         if user_input['ExperienceYears'][0] < required_experience:
             st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
 
-    # Eğer tüm seçimler yapılmadıysa uyarı göster
-    if (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'PreviousCompanies', 'TotalScore']] == 0).all(axis=None):
-        st.info("Lütfen tüm bilgileri doldurunuz!")
+    # Eksik bilgi kontrolü
+    if user_input.isnull().any(axis=None) or (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']] == 0).any(axis=None):
+        st.info("Tüm alanları doldurunuz. Tahmin sonucu yalnızca tam bilgilerle görüntülenebilir.")
         return
 
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
