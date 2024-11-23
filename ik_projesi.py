@@ -1,6 +1,8 @@
 import pandas as pd
 import streamlit as st
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
@@ -24,31 +26,20 @@ def train_model():
 
     return model
 
-# İşe alınamama nedenlerini açıklayan metin oluşturma
-def generate_rejection_reason(user_input, required_experience):
-    reasons = []
+# En yakın çalışanı bulma
+def find_similar_candidates(user_input, data):
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
 
-    # Deneyim eksikliği kontrolü
-    if user_input.loc[0, 'ExperienceYears'] < required_experience:
-        reasons.append(f"Gerekli minimum deneyim yılı: {required_experience}. Adayın deneyimi {user_input.loc[0, 'ExperienceYears']} yıl.")
+    # Kullanıcı girişini veri setinin sütunlarıyla eşleştir
+    user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
-    # Toplam skor eksikliği kontrolü
-    if user_input.loc[0, 'TotalScore'] < 60:
-        reasons.append(f"Toplam skor düşük ({user_input.loc[0, 'TotalScore']:.1f}/100).")
+    scaler = MinMaxScaler()
+    data_scaled = scaler.fit_transform(hired_data)
+    user_scaled = scaler.transform(user_input)
 
-    # Eğitim seviyesi eksikliği kontrolü
-    if user_input.loc[0, 'EducationLevel'] < 2:
-        reasons.append("Eğitim seviyesi, lisans veya daha yüksek düzeyde değil.")
-
-    # Şirket deneyimi kontrolü
-    if user_input.loc[0, 'PreviousCompanies'] < 2:
-        reasons.append(f"Çalıştığı şirket sayısı düşük ({user_input.loc[0, 'PreviousCompanies']} şirket).")
-
-    # Eğer herhangi bir neden bulunmazsa varsayılan bir metin döndür
-    if not reasons:
-        reasons.append("Belirgin bir eksiklik bulunmamaktadır ancak genel değerlendirme sonucu olumsuzdur.")
-
-    return reasons
+    similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
+    top_indices = similarity_scores.argsort()[-3:][::-1]
+    return hired_data.iloc[top_indices]
 
 # Pozisyona göre minimum deneyim yılları
 position_experience_requirements = {
@@ -58,35 +49,6 @@ position_experience_requirements = {
     "Direktör": 10,
     "Genel Müdür": 15
 }
-
-# Kullanıcıdan veri alma
-def get_user_input():
-    position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'], key="position_selectbox")
-    age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18, key="age_input")
-    education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'], key="education_selectbox")
-    experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0, key="experience_slider")
-    companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0, key="companies_input")
-    gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'], key="gender_selectbox")
-    interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0, key="interview_score_slider")
-    skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0, key="skill_score_slider")
-    personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0, key="personality_score_slider")
-
-    # Skorların ortalaması
-    total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
-
-    education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
-    gender_mapping = {'Seçiniz': 0, 'Erkek': 0, 'Kadın': 1}
-
-    user_data = {
-        'Age': age,
-        'Gender': gender_mapping[gender],
-        'EducationLevel': education_mapping[education],
-        'ExperienceYears': experience,
-        'PreviousCompanies': companies_worked,
-        'TotalScore': total_score
-    }
-
-    return pd.DataFrame(user_data, index=[0])
 
 # Ana uygulama
 def main_app():
@@ -101,34 +63,79 @@ def main_app():
 
     model = st.session_state['model']
 
-    # Kullanıcı verisini al
+    # Kullanıcıdan veri alma
+    def get_user_input():
+        position = st.sidebar.selectbox('Pozisyon', ['Seçiniz', 'Uzman Yardımcısı', 'Uzman', 'Müdür', 'Direktör', 'Genel Müdür'])
+        age = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)  # Minimum yaş 18
+        education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
+        experience = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)  # Default 0
+        companies_worked = st.sidebar.number_input('Çalıştığı Şirket Sayısı', min_value=0, max_value=20, value=0)  # Default 0
+        gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'])
+        interview_score = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)  # Default 0
+        skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0)  # Default 0
+        personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)  # Default 0
+
+        # Skorların ortalaması
+        total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
+
+        education_mapping = {'Seçiniz': None, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
+        gender_mapping = {'Seçiniz': None, 'Erkek': 0, 'Kadın': 1}
+
+        user_data = {
+            'Age': age,
+            'Gender': gender_mapping[gender],
+            'EducationLevel': education_mapping[education],
+            'ExperienceYears': experience,
+            'PreviousCompanies': companies_worked,
+            'DistanceFromCompany': 0,  # Placeholder
+            'TotalScore': total_score,
+            'RecruitmentStrategy': 1,  # Default value
+            'Position': position
+        }
+        return pd.DataFrame(user_data, index=[0])
+
     user_input = get_user_input()
 
     # Eksik bilgi kontrolü
-    if (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']] == 0).any().any():
-        st.info("Lütfen tüm alanları doldurunuz.")
+    if (
+        user_input['Position'][0] == 'Seçiniz'
+        or user_input['Gender'][0] is None
+        or user_input['EducationLevel'][0] is None
+        or user_input['TotalScore'][0] == 0
+    ):
+        st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
-    # Pozisyon seçimi ve minimum deneyim kontrolü
-    position = user_input['Position'][0]
-    required_experience = position_experience_requirements.get(position, 0)
-    if user_input.loc[0, 'ExperienceYears'] < required_experience:
-        st.warning(f"{position} pozisyonu için minimum {required_experience} yıl deneyim gereklidir.")
+    # Pozisyon seçildiyse ve deneyim yılı yeterli değilse hiçbir sonuç göstermeme
+    required_experience = position_experience_requirements[user_input['Position'][0]]
+    if user_input['ExperienceYears'][0] < required_experience:
+        st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
         return
+
+    # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
+    user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
+    user_input = user_input.reindex(columns=model.feature_names_in_, fill_value=0)
 
     # Tahmin yapma
     prediction_proba = model.predict_proba(user_input)[0]
     prediction = model.predict(user_input)
 
     # Tahmin sonucunu gösterme
+    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     if prediction[0] == 1:
         st.success("✅ İŞE ALINABİLİR")
     else:
         st.error("❌ İŞE ALINAMAZ")
-        st.write("### İşe Alınamama Nedenleri:")
-        reasons = generate_rejection_reason(user_input, required_experience)
-        for reason in reasons:
-            st.write(f"- {reason}")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Sağ taraftaki görsel ve yazılar
+    st.sidebar.markdown("<div class='content-card'>", unsafe_allow_html=True)
+    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
+    st.markdown("""
+        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
+        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Ana uygulamayı çalıştır
 main_app()
