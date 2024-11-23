@@ -78,8 +78,8 @@ def main_app():
         # Skorların ortalaması
         total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
 
-        education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
-        gender_mapping = {'Seçiniz': 0, 'Erkek': 0, 'Kadın': 1}
+        education_mapping = {'Seçiniz': None, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
+        gender_mapping = {'Seçiniz': None, 'Erkek': 0, 'Kadın': 1}
 
         user_data = {
             'Age': age,
@@ -97,8 +97,12 @@ def main_app():
     user_input = get_user_input()
 
     # Eksik bilgi kontrolü
-    required_columns = ['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']
-    if user_input['Position'][0] == 'Seçiniz' or (user_input[required_columns] == 0).any().any():
+    if (
+        user_input['Position'][0] == 'Seçiniz'
+        or user_input['Gender'][0] is None
+        or user_input['EducationLevel'][0] is None
+        or user_input['TotalScore'][0] == 0
+    ):
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
 
