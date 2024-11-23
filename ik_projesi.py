@@ -76,7 +76,7 @@ def main_app():
         personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)  # Default 0
 
         # Skorların ortalaması
-        total_score = (interview_score + skill_score + personality_score) / 3 if interview_score + skill_score + personality_score > 0 else 0
+        total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
 
         education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
         gender_mapping = {'Seçiniz': 0, 'Erkek': 0, 'Kadın': 1}
@@ -96,16 +96,16 @@ def main_app():
 
     user_input = get_user_input()
 
-    # Pozisyon seçildiyse ve deneyim yılı girildiyse uyarı göster
-    if user_input['Position'][0] != 'Seçiniz' and user_input['ExperienceYears'][0] > 0:
-        required_experience = position_experience_requirements[user_input['Position'][0]]
-        if user_input['ExperienceYears'][0] < required_experience:
-            st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
-
     # Eksik bilgi kontrolü
-    if user_input.isnull().any(axis=None) or (user_input[['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']] == 0).any(axis=None):
-        st.info("Tüm alanları doldurunuz. Tahmin sonucu yalnızca tam bilgilerle görüntülenebilir.")
+    required_columns = ['Age', 'Gender', 'EducationLevel', 'ExperienceYears', 'TotalScore']
+    if user_input['Position'][0] == 'Seçiniz' or user_input[required_columns].isin([0]).any().any():
+        st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
+
+    # Pozisyon seçildiyse ve deneyim yılı girildiyse uyarı göster
+    required_experience = position_experience_requirements[user_input['Position'][0]]
+    if user_input['ExperienceYears'][0] < required_experience:
+        st.warning(f"{user_input['Position'][0]} pozisyonu için minimum {required_experience} yıl deneyim gereklidir!")
 
     # Kullanıcı verisini modelin beklediği sütun düzenine göre sıralama
     user_input = user_input.drop(columns=['Position'])  # Pozisyon modelde kullanılmıyor
@@ -130,15 +130,6 @@ def main_app():
         st.sidebar.write(
             f"Yaş: {int(candidate['Age'])}, Deneyim: {int(candidate['ExperienceYears'])} yıl, Şirket Sayısı: {int(candidate['PreviousCompanies'])}"
         )
-
-    # Tanıtım Metni ve Görsel
-    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
-    st.markdown("""
-        **Bu uygulama, işe alım sürecinizi desteklemek için geliştirilmiştir.** 
-        Adayların deneyimlerini, eğitim seviyelerini ve geçmiş iş bilgilerini kullanarak hızlı bir değerlendirme sağlar.
-    """)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # Ana uygulamayı çalıştır
 main_app()
