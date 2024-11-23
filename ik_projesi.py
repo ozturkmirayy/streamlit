@@ -41,15 +41,18 @@ def find_similar_candidates(user_input, data):
     top_indices = similarity_scores.argsort()[-3:][::-1]
     return hired_data.iloc[top_indices]
 
-# Öneriler
-def get_suggestions():
-    return [
-        "Teknik becerilerinizi geliştirmek için eğitimlere katılabilirsiniz.",
-        "Mülakat pratiği yaparak iletişim yeteneklerinizi artırabilirsiniz.",
-        "Alanınızda deneyim kazanmak için kısa süreli projelerde çalışabilirsiniz.",
-        "Özgeçmişinizi gözden geçirip daha etkili hale getirebilirsiniz.",
-        "Şirket kültürü ve pozisyon beklentileri hakkında daha fazla bilgi edinin."
-    ]
+# Dinamik öneriler oluşturma
+def generate_dynamic_suggestions(user_input, required_experience):
+    suggestions = []
+    if user_input['ExperienceYears'][0] < required_experience:
+        suggestions.append(f"Pozisyon için gerekli minimum deneyim yılı: {required_experience}. Daha fazla deneyim kazanmaya çalışabilirsiniz.")
+    if user_input['TotalScore'][0] < 60:  # Örneğin, toplam skorun düşük olması
+        suggestions.append("Mülakat, beceri veya kişilik skorlarınızı geliştirmek için eğitimlere katılabilirsiniz.")
+    if user_input['EducationLevel'][0] < 2:  # Eğitim seviyesi Lisans'ın altında ise
+        suggestions.append("Eğitim seviyenizi artırmak için lisans veya yüksek lisans programlarına katılabilirsiniz.")
+    if user_input['PreviousCompanies'][0] < 2:  # Daha az şirkette çalışmışsa
+        suggestions.append("Farklı sektörlerde veya şirketlerde deneyim kazanmayı düşünebilirsiniz.")
+    return suggestions
 
 # Pozisyona göre minimum deneyim yılları
 position_experience_requirements = {
@@ -137,7 +140,8 @@ def main_app():
     else:
         st.error("❌ İŞE ALINAMAZ")
         st.write("### Gelişim Önerileri:")
-        for suggestion in get_suggestions():
+        suggestions = generate_dynamic_suggestions(user_input, required_experience)
+        for suggestion in suggestions:
             st.write(f"- {suggestion}")
     st.markdown("</div>", unsafe_allow_html=True)
 
