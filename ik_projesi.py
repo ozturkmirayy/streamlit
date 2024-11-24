@@ -57,7 +57,8 @@ def find_similar_candidates(user_input, data, scaler):
     # Benzerlik hesapla
     similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
     top_indices = similarity_scores.argsort()[-3:][::-1]  # En benzer 3 adayı seç
-    return hired_data.iloc[top_indices]
+    # Sadece yaş ve deneyim bilgilerini döndür
+    return hired_data.iloc[top_indices][['Age', 'ExperienceYears']]
 
 # Dinamik kullanıcı girişi oluştur
 def get_user_input(feature_names):
@@ -147,7 +148,7 @@ def main_app():
     if prediction[0] == 1:
         st.success("✅ Aday İŞE ALINABİLİR")
         similar_candidates = find_similar_candidates(user_input, data, scaler)
-        st.write("### Benzer Adaylar")
+        st.write("### Benzer Adaylar (Yaş ve Deneyim)")
         st.dataframe(similar_candidates)
     else:
         st.error("❌ Aday İŞE ALINAMAZ")
