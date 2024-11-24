@@ -29,12 +29,6 @@ def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl
         model = RandomForestClassifier(random_state=42)
         model.fit(X, y)
 
-        with open(model_path, 'wb') as f:
-            pickle.dump(model, f)
-        st.sidebar.write("Model başarıyla eğitildi ve kaydedildi.")
-    else:
-        st.sidebar.write("Model daha önce kaydedildi. Mevcut modeli kullanacağım.")
-
 # Modeli yükle
 def load_model(model_path='model.pkl'):
     if os.path.exists(model_path):
