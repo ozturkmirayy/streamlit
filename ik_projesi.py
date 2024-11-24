@@ -75,9 +75,6 @@ def main_app():
         skill_score = st.sidebar.slider('Beceri Skoru', 0, 100, 0, key="skill_score_slider")
         personality_score = st.sidebar.slider('Kişilik Skoru', 0, 100, 0, key="personality_score_slider")
 
-        # Skorların ortalaması
-        total_score = (interview_score + skill_score + personality_score) / 3 if (interview_score + skill_score + personality_score) > 0 else 0
-
         education_mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
         gender_mapping = {'Seçiniz': None, 'Erkek': 0, 'Kadın': 1}
 
@@ -86,8 +83,7 @@ def main_app():
             'Gender': gender_mapping[gender],
             'EducationLevel': education_mapping[education],
             'ExperienceYears': experience,
-            'PreviousCompanies': companies_worked,
-            'TotalScore': total_score
+            'PreviousCompanies': companies_worked
         }
         return pd.DataFrame(user_data, index=[0]), position
 
@@ -98,7 +94,6 @@ def main_app():
         position == 'Seçiniz'
         or user_input['Gender'].iloc[0] is None
         or user_input['EducationLevel'].iloc[0] == 0
-        or user_input['TotalScore'].iloc[0] == 0
     ):
         st.info("Lütfen tüm alanları doldurunuz. Tahmin yapmak için eksik bilgi olmamalıdır.")
         return
@@ -124,7 +119,7 @@ def main_app():
 
         # Sütunlar mevcut değilse hata oluşmasını önlemek için kontrol
         for index, candidate in similar_candidates.iterrows():
-            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl, Toplam Skor: {candidate.get('TotalScore', 0):.1f}")
+            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl:.1f}")
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
