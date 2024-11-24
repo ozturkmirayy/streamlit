@@ -29,6 +29,12 @@ def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl
         model = RandomForestClassifier(random_state=42)
         model.fit(X, y)
 
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
+        st.sidebar.write("Model başarıyla eğitildi ve kaydedildi.")
+    else:
+        st.sidebar.write("Model daha önce kaydedildi. Mevcut modeli kullanacağım.")
+
 # Modeli yükle
 def load_model(model_path='model.pkl'):
     if os.path.exists(model_path):
@@ -40,6 +46,9 @@ def load_model(model_path='model.pkl'):
 
 # Dinamik kullanıcı girişi oluştur
 def get_user_input(feature_names):
+    # DistanceFromCompany ve RecruitmentStrategy'yi kaldır
+    feature_names = [feature for feature in feature_names if feature not in ['DistanceFromCompany', 'RecruitmentStrategy']]
+
     st.sidebar.markdown("### Pozisyon Seçimi")
     position = st.sidebar.selectbox('Pozisyon', list(position_experience_requirements.keys()))
 
