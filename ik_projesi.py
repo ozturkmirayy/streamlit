@@ -19,7 +19,10 @@ position_experience_requirements = {
 def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl'):
     if not os.path.exists(model_path):  # Model zaten yoksa eğit
         data = pd.read_csv(data_path)
-        data = data.drop(columns=['DistanceToCompany', 'RecruitmentStrategy'])  # Gereksiz sütunlar kaldırılıyor
+        # Gereksiz sütunlar varsa kaldır
+        columns_to_drop = ['DistanceToCompany', 'RecruitmentStrategy']
+        data = data.drop(columns=[col for col in columns_to_drop if col in data.columns])
+
         X = data.drop(columns=['HiringDecision'])
         y = data['HiringDecision']
 
@@ -43,7 +46,9 @@ def load_model(model_path='model.pkl'):
 
 # En yakın işe alınan çalışanları bul
 def find_similar_candidates(user_input, data, scaler):
-    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision', 'DistanceToCompany', 'RecruitmentStrategy'])
+    # Gereksiz sütunlar varsa kaldır
+    columns_to_drop = ['DistanceToCompany', 'RecruitmentStrategy']
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=[col for col in columns_to_drop if col in data.columns])
     user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
     # Ölçeklendirme
@@ -102,7 +107,9 @@ def main_app():
         return
 
     data = pd.read_csv(data_path)
-    data = data.drop(columns=['DistanceToCompany', 'RecruitmentStrategy'])  # Gereksiz sütunlar kaldırılıyor
+    # Gereksiz sütunlar varsa kaldır
+    columns_to_drop = ['DistanceToCompany', 'RecruitmentStrategy']
+    data = data.drop(columns=[col for col in columns_to_drop if col in data.columns])
 
     # Kullanıcıdan veri al
     user_input, position = get_user_input(model.feature_names_in_)
