@@ -6,10 +6,20 @@ from sklearn.preprocessing import MinMaxScaler
 import pickle
 import os
 
+# Pozisyona göre minimum deneyim seviyeleri
+position_experience_requirements = {
+    "Uzman Yardımcısı": 0,
+    "Uzman": 2,
+    "Müdür": 5,
+    "Direktör": 10,
+    "Genel Müdür": 15
+}
+
 # Modeli eğit ve kaydet
 def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl'):
     if not os.path.exists(model_path):  # Model zaten yoksa eğit
         data = pd.read_csv(data_path)
+        data = data.drop(columns=['DistanceToCompany', 'RecruitmentStrategy'])  # Gereksiz sütunlar kaldırılıyor
         X = data.drop(columns=['HiringDecision'])
         y = data['HiringDecision']
 
@@ -33,7 +43,7 @@ def load_model(model_path='model.pkl'):
 
 # En yakın işe alınan çalışanları bul
 def find_similar_candidates(user_input, data, scaler):
-    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision', 'DistanceToCompany', 'RecruitmentStrategy'])
     user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
 
     # Ölçeklendirme
@@ -53,7 +63,7 @@ def get_user_input(feature_names):
         if feature == 'Age':
             input_data[feature] = st.sidebar.number_input('Yaş', min_value=18, max_value=65, value=18)
         elif feature == 'ExperienceYears':
-            input_data[feature] = st.sidebar.slider('Deneyim (Yıl)', 0, 40, 0)
+            input_data[feature] = st.sidebar.slider('Deneyim Yılı', 0, 40, 0)
         elif feature == 'EducationLevel':
             education = st.sidebar.selectbox('Eğitim Seviyesi', ['Seçiniz', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'])
             mapping = {'Seçiniz': 0, 'Önlisans': 1, 'Lisans': 2, 'Yüksek Lisans': 3, 'Doktora': 4}
@@ -62,12 +72,18 @@ def get_user_input(feature_names):
             gender = st.sidebar.selectbox('Cinsiyet', ['Seçiniz', 'Erkek', 'Kadın'])
             mapping = {'Seçiniz': None, 'Erkek': 0, 'Kadın': 1}
             input_data[feature] = mapping[gender]
-        elif feature == 'InterviewScore' or feature == 'SkillScore' or feature == 'PersonalityScore':
-            input_data[feature] = st.sidebar.slider(f'{feature} (Skor)', 0, 100, 0)
+        elif feature == 'InterviewScore':
+            input_data[feature] = st.sidebar.slider('Mülakat Skoru', 0, 100, 0)
+        elif feature == 'SkillScore':
+            input_data[feature] = st.sidebar.slider('Beceri Skoru', 0, 100, 0)
+        elif feature == 'PersonalityScore':
+            input_data[feature] = st.sidebar.slider('Kişilik Skoru', 0, 100, 0)
         else:
             input_data[feature] = st.sidebar.number_input(feature, min_value=0, max_value=100, value=0)
 
-    return pd.DataFrame(input_data, index=[0])
+    # Pozisyon seçimi
+    position = st.sidebar.selectbox('Pozisyon', list(position_experience_requirements.keys()))
+    return pd.DataFrame(input_data, index=[0]), position
 
 # Ana uygulama
 def main_app():
@@ -86,9 +102,16 @@ def main_app():
         return
 
     data = pd.read_csv(data_path)
+    data = data.drop(columns=['DistanceToCompany', 'RecruitmentStrategy'])  # Gereksiz sütunlar kaldırılıyor
 
     # Kullanıcıdan veri al
-    user_input = get_user_input(model.feature_names_in_)
+    user_input, position = get_user_input(model.feature_names_in_)
+
+    # Pozisyona göre minimum deneyim kontrolü
+    required_experience = position_experience_requirements[position]
+    if user_input['ExperienceYears'].iloc[0] < required_experience:
+        st.warning(f"{position} pozisyonu için minimum {required_experience} yıl deneyim gereklidir.")
+        return
 
     # Eksik bilgi kontrolü
     if user_input.isnull().any(axis=None):
