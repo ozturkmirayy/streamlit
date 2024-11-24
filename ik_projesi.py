@@ -20,7 +20,7 @@ def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl
     if not os.path.exists(model_path):  # Model zaten yoksa eğit
         data = pd.read_csv(data_path)
         # Gereksiz sütunlar varsa kaldır
-        columns_to_drop = ['DistanceToCompany', 'RecruitmentStrategy']
+        columns_to_drop = ['DistanceFromCompany', 'RecruitmentStrategy']
         data = data.drop(columns=[col for col in columns_to_drop if col in data.columns])
 
         X = data.drop(columns=['HiringDecision'])
@@ -46,6 +46,9 @@ def load_model(model_path='model.pkl'):
 
 # Dinamik kullanıcı girişi oluştur
 def get_user_input(feature_names):
+    st.sidebar.markdown("### Pozisyon Seçimi")
+    position = st.sidebar.selectbox('Pozisyon', list(position_experience_requirements.keys()))
+
     st.sidebar.markdown("### Aday Bilgileri")
     input_data = {}
     missing_fields = []
@@ -76,15 +79,14 @@ def get_user_input(feature_names):
         else:
             input_data[feature] = st.sidebar.number_input(feature, min_value=0, max_value=100, value=0)
 
-    # Pozisyon seçimi
-    position = st.sidebar.selectbox('Pozisyon', list(position_experience_requirements.keys()))
-
     return pd.DataFrame(input_data, index=[0]), position, missing_fields
 
 # Ana uygulama
 def main_app():
     st.title("İşe Alım Tahmin Uygulaması")
     st.sidebar.markdown("## Model Ayarları")
+
+    st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
 
     data_path = 'recruitment_data.csv'
     model_path = 'model.pkl'
@@ -99,7 +101,7 @@ def main_app():
 
     data = pd.read_csv(data_path)
     # Gereksiz sütunlar varsa kaldır
-    columns_to_drop = ['DistanceToCompany', 'RecruitmentStrategy']
+    columns_to_drop = ['DistanceFromCompany', 'RecruitmentStrategy']
     data = data.drop(columns=[col for col in columns_to_drop if col in data.columns])
 
     # Kullanıcıdan veri al
