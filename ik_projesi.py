@@ -122,9 +122,10 @@ def main_app():
         st.success("✅ İŞE ALINABİLİR")
         similar_candidates = find_similar_candidates(user_input, data)
 
-        # Sütunlar mevcut değilse hata oluşmasını önlemek için kontrol
+        # Benzer aday bilgilerini göster, Total Score hariç
+        st.write("### En Yakın İşe Alınan Çalışanlar:")
         for index, candidate in similar_candidates.iterrows():
-            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl, Toplam Skor: {candidate.get('TotalScore', 0):.1f}")
+            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl")
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
