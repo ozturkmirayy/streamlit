@@ -148,8 +148,9 @@ def main_app():
     if prediction[0] == 1:
         st.success("✅ Aday İŞE ALINABİLİR")
         similar_candidates = find_similar_candidates(user_input, data, scaler)
-        st.write("### Benzer Adaylar (Yaş ve Deneyim)")
-        st.dataframe(similar_candidates)
+        st.write("### Benzer Adaylar")
+        for _, candidate in similar_candidates.iterrows():
+            st.write(f"- Yaş: {candidate['Age']}, Deneyim: {candidate['ExperienceYears']} yıl")
     else:
         st.error("❌ Aday İŞE ALINAMAZ")
 
