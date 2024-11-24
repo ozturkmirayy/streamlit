@@ -119,7 +119,7 @@ def main_app():
 
         # Sütunlar mevcut değilse hata oluşmasını önlemek için kontrol
         for index, candidate in similar_candidates.iterrows():
-            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl:.1f}")
+            st.write(f"- Yaş: {candidate.get('Age', 'Bilinmiyor')}, Deneyim: {candidate.get('ExperienceYears', 'Bilinmiyor')} yıl}")
     else:
         st.error("❌ İŞE ALINAMAZ")
     st.markdown("</div>", unsafe_allow_html=True)
