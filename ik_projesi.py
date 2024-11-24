@@ -31,9 +31,6 @@ def train_and_save_model(data_path='recruitment_data.csv', model_path='model.pkl
 
         with open(model_path, 'wb') as f:
             pickle.dump(model, f)
-        st.sidebar.write("Model başarıyla eğitildi ve kaydedildi.")
-    else:
-        st.sidebar.write("Model daha önce kaydedildi. Mevcut modeli kullanacağım.")
 
 # Modeli yükle
 def load_model(model_path='model.pkl'):
@@ -103,8 +100,6 @@ def get_user_input(feature_names):
 # Ana uygulama
 def main_app():
     st.title("İşe Alım Tahmin Uygulaması")
-    st.sidebar.markdown("## Model Ayarları")
-
     st.image("https://www.cottgroup.com/images/Zoo/gorsel/insan-kaynaklari-analitigi-ic-gorsel-2.webp", width=400)
 
     data_path = 'recruitment_data.csv'
