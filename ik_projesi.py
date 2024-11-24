@@ -44,6 +44,21 @@ def load_model(model_path='model.pkl'):
         st.error("Model dosyası bulunamadı! Lütfen önce modeli eğitin.")
         return None
 
+# Benzer adayları bul
+def find_similar_candidates(user_input, data, scaler):
+    # Sadece işe alınmış adaylar
+    hired_data = data[data['HiringDecision'] == 1].drop(columns=['HiringDecision'])
+    user_input = user_input.reindex(columns=hired_data.columns, fill_value=0)
+
+    # Ölçeklendirme
+    data_scaled = scaler.fit_transform(hired_data)
+    user_scaled = scaler.transform(user_input)
+
+    # Benzerlik hesapla
+    similarity_scores = cosine_similarity(data_scaled, user_scaled).flatten()
+    top_indices = similarity_scores.argsort()[-3:][::-1]  # En benzer 3 adayı seç
+    return hired_data.iloc[top_indices]
+
 # Dinamik kullanıcı girişi oluştur
 def get_user_input(feature_names):
     # DistanceFromCompany ve RecruitmentStrategy'yi kaldır
@@ -131,6 +146,9 @@ def main_app():
     # Tahmin sonuçlarını göster
     if prediction[0] == 1:
         st.success("✅ Aday İŞE ALINABİLİR")
+        similar_candidates = find_similar_candidates(user_input, data, scaler)
+        st.write("### Benzer Adaylar")
+        st.dataframe(similar_candidates)
     else:
         st.error("❌ Aday İŞE ALINAMAZ")
 
